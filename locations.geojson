@@ -2,4 +2,6 @@
     {"type": "Feature", "properties": {"name": "Mobile water treatment trailer", "organization": "Vermont Rural Water Association"}, "geometry": {"type": "Point", "coordinates": [-73.1384611, 44.5064072]}},
     {"type": "Feature", "properties": {"name": "Mobile water treatment trailer", "organization": "Vermont Rural Water Association"}, "geometry": {"type": "Point", "coordinates": [-73.249544, 44.515374]}},
     {"type": "Feature", "properties": {"name": "Mobile water treatment trailer", "organization": "Vermont Rural Water Association"}, "geometry": {"type": "Point", "coordinates": [-73.249544, 44.515374]}},
-    {"type": "Feature", "properties": {"name": "Mobile water treatment trailer", "organization": "Vermont Rural Water Association"}, "geometry": {"type": "Point", "coordinates": [-73.19392688014239, 44.487554765534895]}}]}
+    {"type": "Feature", "properties": {"name": "Mobile water treatment trailer", "organization": "Vermont Rural Water Association"}, "geometry": {"type": "Point", "coordinates": [-73.19392688014239, 44.487554765534895]}}
+    ]
+}
