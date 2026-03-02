@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.epa.gov)",
+      "WebFetch(domain:vtruralwater.org)",
+      "WebFetch(domain:dec.vermont.gov)"
+    ]
+  }
+}

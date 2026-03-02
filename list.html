@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resource List – VRWA Mutual Aid Map</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+    VRWA Mutual Aid Map
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">🗺 <span class="nav-label">Map</span></a></li>
+    <li><a href="list.html" class="active">📋 <span class="nav-label">List</span></a></li>
+    <li><a href="manage.html">✏️ <span class="nav-label">Manage</span></a></li>
+    <li><a href="about.html">ℹ️ <span class="nav-label">About</span></a></li>
+  </ul>
+</nav>
+
+<div class="page">
+<div class="inner-page">
+
+  <div class="page-header">
+    <div>
+      <h1>Mutual Aid Resources</h1>
+      <p>All registered equipment and aid items for VT, NH, and NY utilities.</p>
+    </div>
+    <a href="manage.html" class="btn btn-primary">+ Add Item</a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total Items</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-available" style="color:#27ae60">—</div><div class="stat-label">Available</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-deployed"  style="color:#e67e22">—</div><div class="stat-label">Deployed</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-states">—</div><div class="stat-label">States</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-orgs">—</div><div class="stat-label">Organizations</div></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <input id="search" class="search-input" type="text" placeholder="Search by name, town, org…" />
+    <select id="filter-status" class="filter-select">
+      <option value="">All Statuses</option>
+      <option value="available">Available</option>
+      <option value="deployed">Deployed</option>
+      <option value="unavailable">Unavailable</option>
+    </select>
+    <select id="filter-type" class="filter-select">
+      <option value="">All System Types</option>
+      <option value="drinking_water">Drinking Water</option>
+      <option value="wastewater">Wastewater</option>
+      <option value="both">Both</option>
+    </select>
+    <select id="filter-state" class="filter-select">
+      <option value="">All States</option>
+      <option value="VT">Vermont</option>
+      <option value="NH">New Hampshire</option>
+      <option value="NY">New York</option>
+      <option value="MA">Massachusetts</option>
+      <option value="ME">Maine</option>
+      <option value="CT">Connecticut</option>
+      <option value="RI">Rhode Island</option>
+    </select>
+    <select id="filter-category" class="filter-select">
+      <option value="">All Categories</option>
+    </select>
+    <button id="btn-export" class="btn btn-secondary" style="margin-left:auto">⬇ Export GeoJSON</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table id="items-table">
+      <thead>
+        <tr>
+          <th data-col="name">Item <span class="si">↕</span></th>
+          <th data-col="category">Category <span class="si">↕</span></th>
+          <th data-col="systemType">System <span class="si">↕</span></th>
+          <th data-col="organization">Organization <span class="si">↕</span></th>
+          <th data-col="town">Town <span class="si">↕</span></th>
+          <th data-col="state">State <span class="si">↕</span></th>
+          <th data-col="quantity">Qty <span class="si">↕</span></th>
+          <th data-col="status">Status <span class="si">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr><td colspan="8" style="text-align:center;padding:2rem;color:#7f8c8d">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="row-count" style="font-size:0.8rem;color:#7f8c8d;margin-top:0.5rem;text-align:right"></div>
+
+</div>
+</div>
+
+<script src="js/data.js"></script>
+<script>
+const { SYSTEM_TYPES, STATUSES, CATEGORIES, CATEGORY_ICONS } = VRWAData;
+
+let allItems = [];
+let sortCol  = 'name';
+let sortDir  = 1; // 1 = asc, -1 = desc
+
+// Populate category filter
+const catSel = document.getElementById('filter-category');
+CATEGORIES.forEach(c => {
+  const o = document.createElement('option');
+  o.value = c; o.textContent = c;
+  catSel.appendChild(o);
+});
+
+// ── Load data ─────────────────────────────────────
+async function init() {
+  allItems = await VRWAData.getAllItems();
+  updateStats(allItems);
+  render();
+}
+
+function updateStats(items) {
+  document.getElementById('stat-total').textContent     = items.length;
+  document.getElementById('stat-available').textContent = items.filter(i => i.status === 'available').length;
+  document.getElementById('stat-deployed').textContent  = items.filter(i => i.status === 'deployed').length;
+  document.getElementById('stat-states').textContent    = new Set(items.map(i => i.state)).size;
+  document.getElementById('stat-orgs').textContent      = new Set(items.map(i => i.organization).filter(Boolean)).size;
+}
+
+// ── Filtering & sorting ───────────────────────────
+function getFiltered() {
+  const q    = document.getElementById('search').value.toLowerCase();
+  const st   = document.getElementById('filter-status').value;
+  const ty   = document.getElementById('filter-type').value;
+  const sta  = document.getElementById('filter-state').value;
+  const cat  = document.getElementById('filter-category').value;
+
+  return allItems.filter(item => {
+    if (st  && item.status     !== st)  return false;
+    if (ty  && item.systemType !== ty)  return false;
+    if (sta && item.state      !== sta) return false;
+    if (cat && item.category   !== cat) return false;
+    if (q) {
+      const haystack = [item.name, item.organization, item.town, item.category, item.description].join(' ').toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function sorted(items) {
+  return [...items].sort((a, b) => {
+    const va = String(a[sortCol] ?? '').toLowerCase();
+    const vb = String(b[sortCol] ?? '').toLowerCase();
+    if (va < vb) return -sortDir;
+    if (va > vb) return  sortDir;
+    return 0;
+  });
+}
+
+// ── Render table ──────────────────────────────────
+function render() {
+  const filtered = sorted(getFiltered());
+  const tbody    = document.getElementById('table-body');
+
+  // Update sort icons
+  document.querySelectorAll('th[data-col]').forEach(th => {
+    const col = th.dataset.col;
+    const si  = th.querySelector('.si');
+    si.textContent = col === sortCol ? (sortDir === 1 ? '↑' : '↓') : '↕';
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr class="no-results"><td colspan="8">No items match your filters.</td></tr>';
+    document.getElementById('row-count').textContent = '';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(item => {
+    const icon   = CATEGORY_ICONS[item.category] || '📦';
+    const sysLbl = SYSTEM_TYPES[item.systemType]  || item.systemType;
+    const stLbl  = STATUSES[item.status]          || item.status;
+    return `<tr>
+      <td><strong>${icon} ${item.name}</strong>
+        ${item.description ? `<div style="font-size:0.76rem;color:#7f8c8d;margin-top:0.15rem">${item.description.slice(0,90)}${item.description.length > 90 ? '…' : ''}</div>` : ''}
+      </td>
+      <td>${item.category}</td>
+      <td><span class="badge badge-${item.systemType}">${sysLbl}</span></td>
+      <td>${item.organization || '—'}
+        ${item.contact ? `<div style="font-size:0.73rem;color:#2e86c1;margin-top:0.1rem">${item.contact}</div>` : ''}
+      </td>
+      <td>${item.town || '—'}</td>
+      <td>${item.state || '—'}</td>
+      <td style="text-align:center">${item.quantity}</td>
+      <td><span class="badge badge-${item.status}">${stLbl}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('row-count').textContent = `Showing ${filtered.length} of ${allItems.length} items`;
+}
+
+// ── Sort on header click ──────────────────────────
+document.querySelectorAll('th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) { sortDir *= -1; }
+    else { sortCol = col; sortDir = 1; }
+    render();
+  });
+});
+
+// ── Filter change ─────────────────────────────────
+['search','filter-status','filter-type','filter-state','filter-category'].forEach(id => {
+  document.getElementById(id).addEventListener('input', render);
+});
+
+// ── Export ────────────────────────────────────────
+document.getElementById('btn-export').addEventListener('click', async () => {
+  const json = await VRWAData.exportGeoJSON();
+  const blob = new Blob([json], { type: 'application/json' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'vrwa-mutual-aid.geojson';
+  a.click();
+});
+
+init();
+</script>
+</body>
+</html>

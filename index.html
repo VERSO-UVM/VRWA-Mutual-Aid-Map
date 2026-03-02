@@ -1,53 +1,136 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>VRWA Mutual Aid Map</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        html, body, #map {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VRWA Mutual Aid Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-    <div id="map"></div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([44.5064072, -73.1384611], 10);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+<nav>
+  <a class="nav-brand" href="index.html">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+    VRWA Mutual Aid Map
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">🗺 <span class="nav-label">Map</span></a></li>
+    <li><a href="list.html">📋 <span class="nav-label">List</span></a></li>
+    <li><a href="manage.html">✏️ <span class="nav-label">Manage</span></a></li>
+    <li><a href="about.html">ℹ️ <span class="nav-label">About</span></a></li>
+  </ul>
+</nav>
 
-        fetch('locations.geojson')
-            .then(response => response.json())
-            .then(data => {
-                L.geoJSON(data, {
-                    onEachFeature: function (feature, layer) {
-                        var popupContent = '';
-                        if (feature.properties) {
-                            for (var key in feature.properties) {
-                                popupContent += '<strong>' + key + ':</strong> ' + feature.properties[key] + '<br>';
-                            }
-                        }
-                        layer.bindPopup(popupContent);
+<div class="page">
+  <div id="map"></div>
+</div>
 
-                        layer.on('mouseover', function () {
-                            this.openPopup();
-                        });
-                        layer.on('mouseout', function () {
-                            this.closePopup();
-                        });
-                    }
-                }).addTo(map);
-            });
-    </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/data.js"></script>
+<script>
+const { STATUS_COLORS, CATEGORY_ICONS, SYSTEM_TYPES, STATUSES } = VRWAData;
+
+const map = L.map('map').setView([44.2, -72.6], 7);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+// ── Legend ────────────────────────────────────────
+const legend = L.control({ position: 'bottomright' });
+legend.onAdd = function() {
+  const div = L.DomUtil.create('div', 'map-legend');
+  div.innerHTML = `
+    <h4>Status</h4>
+    <div class="legend-item"><div class="legend-dot" style="background:#27ae60"></div> Available</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div> Deployed</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div> Unavailable</div>
+  `;
+  return div;
+};
+legend.addTo(map);
+
+// ── Filter controls ───────────────────────────────
+const filterCtrl = L.control({ position: 'topleft' });
+filterCtrl.onAdd = function() {
+  const div = L.DomUtil.create('div', 'map-legend');
+  div.style.padding = '0.6rem 0.8rem';
+  div.innerHTML = `
+    <h4 style="margin-bottom:0.5rem">Filter</h4>
+    <select id="map-filter-status" style="width:100%;margin-bottom:0.4rem;padding:0.3rem 0.4rem;font-size:0.8rem;border:1px solid #d5d8dc;border-radius:4px;">
+      <option value="">All Statuses</option>
+      <option value="available">Available</option>
+      <option value="deployed">Deployed</option>
+      <option value="unavailable">Unavailable</option>
+    </select>
+    <select id="map-filter-type" style="width:100%;padding:0.3rem 0.4rem;font-size:0.8rem;border:1px solid #d5d8dc;border-radius:4px;">
+      <option value="">All System Types</option>
+      <option value="drinking_water">Drinking Water</option>
+      <option value="wastewater">Wastewater</option>
+      <option value="both">Both</option>
+    </select>
+  `;
+  L.DomEvent.disableClickPropagation(div);
+  return div;
+};
+filterCtrl.addTo(map);
+
+// ── Load & render markers ─────────────────────────
+let markerGroup = L.layerGroup().addTo(map);
+
+async function renderMarkers() {
+  const items       = await VRWAData.getAllItems();
+  const statusFilter = document.getElementById('map-filter-status').value;
+  const typeFilter   = document.getElementById('map-filter-type').value;
+
+  markerGroup.clearLayers();
+
+  items.forEach(item => {
+    if (statusFilter && item.status !== statusFilter) return;
+    if (typeFilter   && item.systemType !== typeFilter)  return;
+    if (!item.lat || !item.lon) return;
+
+    const color  = STATUS_COLORS[item.status] || '#999';
+    const icon   = CATEGORY_ICONS[item.category] || '📦';
+    const sysLbl = SYSTEM_TYPES[item.systemType]  || item.systemType;
+    const stLbl  = STATUSES[item.status]          || item.status;
+
+    const circle = L.circleMarker([item.lat, item.lon], {
+      radius: 10,
+      fillColor: color,
+      color: '#fff',
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.88
+    });
+
+    const popupHtml = `
+      <div class="popup-title">${icon} ${item.name}</div>
+      <div class="popup-row"><span class="popup-label">Organization</span><span class="popup-val">${item.organization || '—'}</span></div>
+      <div class="popup-row"><span class="popup-label">Location</span><span class="popup-val">${item.town}, ${item.state}</span></div>
+      <div class="popup-row"><span class="popup-label">System</span><span class="popup-val">${sysLbl}</span></div>
+      <div class="popup-row"><span class="popup-label">Qty</span><span class="popup-val">${item.quantity}</span></div>
+      <div class="popup-row"><span class="popup-label">Status</span><span class="popup-val"><strong style="color:${color}">${stLbl}</strong></span></div>
+      ${item.description ? `<div style="margin-top:0.5rem;font-size:0.78rem;color:#555;line-height:1.4">${item.description}</div>` : ''}
+      ${item.contact ? `<div style="margin-top:0.4rem;font-size:0.78rem;color:#2e86c1">📞 ${item.contact}</div>` : ''}
+    `;
+
+    circle.bindPopup(popupHtml, { maxWidth: 280 });
+    circle.on('mouseover', function() { this.openPopup(); });
+    circle.on('mouseout',  function() { this.closePopup(); });
+    markerGroup.addLayer(circle);
+  });
+}
+
+renderMarkers();
+
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'map-filter-status' || e.target.id === 'map-filter-type') {
+    renderMarkers();
+  }
+});
+</script>
 </body>
 </html>
-

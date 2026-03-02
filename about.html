@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About – VRWA Mutual Aid Map</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+    VRWA Mutual Aid Map
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">🗺 <span class="nav-label">Map</span></a></li>
+    <li><a href="list.html">📋 <span class="nav-label">List</span></a></li>
+    <li><a href="manage.html">✏️ <span class="nav-label">Manage</span></a></li>
+    <li><a href="about.html" class="active">ℹ️ <span class="nav-label">About</span></a></li>
+  </ul>
+</nav>
+
+<div class="page">
+<div class="about-page">
+
+  <h1>About the VRWA Mutual Aid Map</h1>
+  <p class="about-subtitle">A resource registry for water and wastewater utilities in Vermont, New Hampshire, New York, and neighboring New England states.</p>
+
+  <!-- What is this -->
+  <div class="about-section">
+    <h2>What Is This Map?</h2>
+    <p>The VRWA Mutual Aid Map is an interactive tool built and maintained by the <strong>Vermont Rural Water Association (VRWA)</strong> to help drinking water and wastewater utilities quickly find shared equipment and aid resources during emergencies.</p>
+    <p>When a pipe bursts, a lift station fails, a flood takes out a treatment plant, or a power outage threatens service — time matters. This map helps utility operators and emergency managers identify who has what, and where, without making dozens of phone calls.</p>
+    <p>The map covers Vermont and neighboring states that participate in the regional Water/Wastewater Agency Response Network (WARN), including New Hampshire, New York, Massachusetts, Connecticut, Maine, and Rhode Island.</p>
+  </div>
+
+  <!-- VT WARN -->
+  <div class="about-section">
+    <h2>Vermont Water/Wastewater Agency Response Network (VT WARN)</h2>
+    <p>VT WARN is Vermont's state-based mutual aid network for water and wastewater utilities. Modeled after national EPA WARN guidelines, it allows any participating utility — public or private, large or small — to quickly request or offer aid to another member during any type of emergency.</p>
+    <p>Participation is <strong>free and voluntary</strong>. To join, utilities sign a standard Mutual Aid Agreement (MAA) that pre-establishes terms for liability, workers' compensation, and cost reimbursement — so when a crisis hits, there's no paperwork delay.</p>
+    <p>Resources available through VT WARN include:</p>
+    <ul>
+      <li>Mobile water treatment trailers and skid units</li>
+      <li>Portable generators (various sizes)</li>
+      <li>Bypass pumps and pump station skids (including a 500 GPM trailer-mounted wastewater pump)</li>
+      <li>Pumper/vactor trucks for sewer cleaning and bypass</li>
+      <li>Ground penetrating radar and leak correlators</li>
+      <li>Valve and hydrant exercisers</li>
+      <li>CCTV sewer line cameras</li>
+      <li>Portable water storage tanks and bottled water</li>
+      <li>Certified operators for temporary staffing</li>
+      <li>Safety gear, lights, boats, saws, and hand tools</li>
+    </ul>
+    <p>To join VT WARN or submit an aid request, visit <a href="https://vtruralwater.org/vt-warn/" target="_blank" rel="noopener">vtruralwater.org/vt-warn</a> or contact the Vermont DEC WARN coordinator at <a href="https://dec.vermont.gov/waterwastewater-agency-response-network-warn" target="_blank" rel="noopener">dec.vermont.gov</a>.</p>
+  </div>
+
+  <!-- Equipment categories -->
+  <div class="about-section">
+    <h2>Equipment Categories</h2>
+    <p>Items on this map are organized into the following categories:</p>
+    <div class="category-grid">
+      <div class="category-item"><span class="ci">🚿</span> Mobile Treatment</div>
+      <div class="category-item"><span class="ci">⚡</span> Generator</div>
+      <div class="category-item"><span class="ci">💧</span> Pump</div>
+      <div class="category-item"><span class="ci">🚛</span> Emergency Trailer</div>
+      <div class="category-item"><span class="ci">🪣</span> Water Supply</div>
+      <div class="category-item"><span class="ci">🏭</span> Pump Station</div>
+      <div class="category-item"><span class="ci">🚚</span> Vacuum/Vactor Truck</div>
+      <div class="category-item"><span class="ci">📡</span> Detection Equipment</div>
+      <div class="category-item"><span class="ci">🔧</span> Sewer Equipment</div>
+      <div class="category-item"><span class="ci">👷</span> Personnel</div>
+      <div class="category-item"><span class="ci">📦</span> Other</div>
+    </div>
+  </div>
+
+  <!-- How to use -->
+  <div class="about-section">
+    <h2>How to Use This Map</h2>
+    <p><strong>Map view:</strong> The interactive map shows all registered resources as colored dots. Green = Available, Orange = Deployed, Red = Unavailable. Use the filter controls to narrow by status or system type. Click or hover any marker for details.</p>
+    <p><strong>List view:</strong> The <a href="list.html">List</a> page shows all items in a searchable, sortable table. Filter by status, system type, state, or category. Click any column header to sort. Use the Export button to download a GeoJSON file of all resources.</p>
+    <p><strong>Manage items:</strong> The <a href="manage.html">Manage</a> page lets you add new items or update the status of existing ones. Items you add are stored locally in your browser — use the Export feature to share your updated dataset with the VRWA team.</p>
+  </div>
+
+  <!-- EPA & national context -->
+  <div class="about-section">
+    <h2>National Mutual Aid Framework</h2>
+    <p>Water and Wastewater Agency Response Networks (WARNs) exist in 49 states and the National Capital Region. They operate under a common framework established by the U.S. EPA, allowing utilities to share resources more quickly than traditional disaster-declaration mechanisms require.</p>
+    <p>For more information on the national WARN framework, visit the <a href="https://www.epa.gov/waterutilityresponse/mutual-aid-and-assistance-drinking-water-and-wastewater-utilities" target="_blank" rel="noopener">EPA Mutual Aid and Assistance page</a>.</p>
+    <p>New England states with active WARN programs include:</p>
+    <ul>
+      <li><strong>Vermont:</strong> VT WARN – <a href="https://vtruralwater.org/vt-warn/" target="_blank" rel="noopener">vtruralwater.org/vt-warn</a></li>
+      <li><strong>New Hampshire:</strong> NH PWMA – <a href="https://www.des.nh.gov" target="_blank" rel="noopener">des.nh.gov</a></li>
+      <li><strong>Massachusetts:</strong> MaWARN – <a href="https://www.mawarn.org/" target="_blank" rel="noopener">mawarn.org</a></li>
+      <li><strong>New York:</strong> NY WARN – coordinated through NYS DEC and DOS</li>
+      <li><strong>Maine, Connecticut, Rhode Island:</strong> State-based WARN programs under EPA region 1</li>
+    </ul>
+  </div>
+
+  <!-- Contact -->
+  <div class="about-section">
+    <h2>Contact &amp; Resources</h2>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <strong>Vermont Rural Water Association (VRWA)</strong>
+        📧 <a href="mailto:info@vtruralwater.org">info@vtruralwater.org</a><br>
+        📞 802-660-4988<br>
+        🌐 <a href="https://vtruralwater.org" target="_blank" rel="noopener">vtruralwater.org</a>
+      </div>
+      <div class="contact-card">
+        <strong>VT WARN / VT DEC</strong>
+        Emergency Aid Requests:<br>
+        🌐 <a href="https://dec.vermont.gov/waterwastewater-agency-response-network-warn" target="_blank" rel="noopener">dec.vermont.gov/vtwarn</a><br>
+        Request Aid: <a href="https://dec.vermont.gov/vtwarn/request-aid" target="_blank" rel="noopener">Request Aid Form</a>
+      </div>
+      <div class="contact-card">
+        <strong>EPA Water Emergency Resources</strong>
+        🌐 <a href="https://www.epa.gov/waterutilityresponse" target="_blank" rel="noopener">epa.gov/waterutilityresponse</a><br>
+        Water Security Division<br>
+        Office of Water
+      </div>
+      <div class="contact-card">
+        <strong>Project Repository</strong>
+        🌐 <a href="https://github.com/VERSO-UVM/VRWA-Mutual-Aid-Map" target="_blank" rel="noopener">GitHub: VERSO-UVM/VRWA-Mutual-Aid-Map</a><br>
+        Open source · Contributions welcome<br>
+        Built with Leaflet.js &amp; OpenStreetMap
+      </div>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:#7f8c8d;font-size:0.8rem;margin-top:1.5rem">
+    VRWA Mutual Aid Map · Vermont Rural Water Association · <a href="https://vtruralwater.org" target="_blank" rel="noopener">vtruralwater.org</a>
+  </p>
+
+</div>
+</div>
+
+</body>
+</html>

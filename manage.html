@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Items – VRWA Mutual Aid Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+    VRWA Mutual Aid Map
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">🗺 <span class="nav-label">Map</span></a></li>
+    <li><a href="list.html">📋 <span class="nav-label">List</span></a></li>
+    <li><a href="manage.html" class="active">✏️ <span class="nav-label">Manage</span></a></li>
+    <li><a href="about.html">ℹ️ <span class="nav-label">About</span></a></li>
+  </ul>
+</nav>
+
+<div class="page">
+<div class="manage-page">
+
+  <div class="page-header">
+    <div>
+      <h1>Manage Resources</h1>
+      <p>Add new items or update the status of existing resources.</p>
+    </div>
+    <button id="btn-export" class="btn btn-secondary">⬇ Export GeoJSON</button>
+  </div>
+
+  <div class="alert alert-info" id="persist-notice">
+    <strong>Local storage mode:</strong> Items you add or status changes you make are saved in your browser. Use the <strong>Export GeoJSON</strong> button to share your updated dataset with the VRWA team for inclusion in the official map.
+  </div>
+
+  <!-- ── Add / Edit Form ──────────────────────────────── -->
+  <div class="form-card" id="form-card">
+    <h2 id="form-title">Add New Resource</h2>
+    <div id="form-alert" style="display:none"></div>
+
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Item Name <span class="req">*</span></label>
+        <input id="f-name" type="text" placeholder="e.g. Mobile Water Treatment Trailer" />
+      </div>
+
+      <div class="form-group">
+        <label>Category <span class="req">*</span></label>
+        <select id="f-category"></select>
+      </div>
+
+      <div class="form-group">
+        <label>System Type <span class="req">*</span></label>
+        <select id="f-systemType">
+          <option value="drinking_water">Drinking Water</option>
+          <option value="wastewater">Wastewater</option>
+          <option value="both" selected>Both</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Status <span class="req">*</span></label>
+        <select id="f-status">
+          <option value="available">Available</option>
+          <option value="deployed">Deployed</option>
+          <option value="unavailable">Unavailable</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Quantity</label>
+        <input id="f-quantity" type="number" min="1" value="1" />
+      </div>
+
+      <div class="form-group">
+        <label>Organization <span class="req">*</span></label>
+        <input id="f-organization" type="text" placeholder="e.g. Town of Stowe Water Dept." />
+      </div>
+
+      <div class="form-group">
+        <label>Town</label>
+        <input id="f-town" type="text" placeholder="e.g. Stowe" />
+      </div>
+
+      <div class="form-group">
+        <label>State</label>
+        <select id="f-state">
+          <option value="VT" selected>Vermont (VT)</option>
+          <option value="NH">New Hampshire (NH)</option>
+          <option value="NY">New York (NY)</option>
+          <option value="MA">Massachusetts (MA)</option>
+          <option value="ME">Maine (ME)</option>
+          <option value="CT">Connecticut (CT)</option>
+          <option value="RI">Rhode Island (RI)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Contact</label>
+        <input id="f-contact" type="text" placeholder="e.g. Jane Smith | 802-555-1234" />
+      </div>
+
+      <div class="form-group full">
+        <label>Description</label>
+        <textarea id="f-description" placeholder="Brief description of the item, capabilities, or any conditions on its use…"></textarea>
+      </div>
+
+      <!-- Location picker -->
+      <div class="form-group full">
+        <label>Location <span class="req">*</span> <span style="font-weight:400;color:#7f8c8d">(click the map to set coordinates)</span></label>
+        <div id="picker-map"></div>
+        <div class="coord-row">
+          <div class="form-group">
+            <label>Latitude</label>
+            <input id="f-lat" type="text" placeholder="e.g. 44.4759" />
+          </div>
+          <div class="form-group">
+            <label>Longitude</label>
+            <input id="f-lon" type="text" placeholder="e.g. -73.2121" />
+          </div>
+        </div>
+        <div class="coord-hint">Tip: right-click any location on <a href="https://www.openstreetmap.org" target="_blank" rel="noopener">openstreetmap.org</a> and choose "Show address" to find coordinates.</div>
+      </div>
+    </div><!-- /form-grid -->
+
+    <div class="form-actions">
+      <button id="btn-cancel" class="btn btn-secondary" style="display:none">Cancel</button>
+      <button id="btn-submit" class="btn btn-success">➕ Add Item</button>
+    </div>
+  </div>
+
+  <!-- ── Existing items ─────────────────────────────── -->
+  <div class="form-card">
+    <h2>All Registered Items</h2>
+
+    <div class="controls" style="margin-bottom:0.75rem">
+      <input id="manage-search" class="search-input" type="text" placeholder="Search items…" />
+      <select id="manage-filter-status" class="filter-select">
+        <option value="">All Statuses</option>
+        <option value="available">Available</option>
+        <option value="deployed">Deployed</option>
+        <option value="unavailable">Unavailable</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Organization</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="manage-tbody">
+          <tr><td colspan="5" style="text-align:center;padding:2rem;color:#7f8c8d">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /manage-page -->
+</div><!-- /page -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/data.js"></script>
+<script>
+const { CATEGORIES, CATEGORY_ICONS, STATUSES, STATUS_COLORS } = VRWAData;
+
+// ── Populate category select ──────────────────────
+const catSel = document.getElementById('f-category');
+CATEGORIES.forEach(c => {
+  const o = document.createElement('option');
+  o.value = c; o.textContent = `${CATEGORY_ICONS[c] || ''} ${c}`;
+  catSel.appendChild(o);
+});
+
+// ── Location picker map ───────────────────────────
+const pickerMap = L.map('picker-map').setView([44.2, -72.6], 7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap contributors'
+}).addTo(pickerMap);
+
+let pickerMarker = null;
+
+pickerMap.on('click', function(e) {
+  const lat = e.latlng.lat.toFixed(6);
+  const lon = e.latlng.lng.toFixed(6);
+  document.getElementById('f-lat').value = lat;
+  document.getElementById('f-lon').value = lon;
+  if (pickerMarker) pickerMap.removeLayer(pickerMarker);
+  pickerMarker = L.marker([lat, lon]).addTo(pickerMap);
+});
+
+// Sync typed coords back to map
+['f-lat','f-lon'].forEach(id => {
+  document.getElementById(id).addEventListener('change', syncPickerFromInputs);
+});
+
+function syncPickerFromInputs() {
+  const lat = parseFloat(document.getElementById('f-lat').value);
+  const lon = parseFloat(document.getElementById('f-lon').value);
+  if (!isNaN(lat) && !isNaN(lon)) {
+    if (pickerMarker) pickerMap.removeLayer(pickerMarker);
+    pickerMarker = L.marker([lat, lon]).addTo(pickerMap);
+    pickerMap.setView([lat, lon], Math.max(pickerMap.getZoom(), 10));
+  }
+}
+
+// ── Form state ────────────────────────────────────
+let editingId   = null;
+let editingBase = false;
+let allItems    = [];
+
+function resetForm() {
+  editingId   = null;
+  editingBase = false;
+  document.getElementById('form-title').textContent  = 'Add New Resource';
+  document.getElementById('btn-submit').textContent  = '➕ Add Item';
+  document.getElementById('btn-cancel').style.display = 'none';
+  document.getElementById('form-alert').style.display = 'none';
+  ['f-name','f-organization','f-town','f-contact','f-description','f-lat','f-lon'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-category').value   = CATEGORIES[0];
+  document.getElementById('f-systemType').value = 'both';
+  document.getElementById('f-status').value     = 'available';
+  document.getElementById('f-quantity').value   = '1';
+  document.getElementById('f-state').value      = 'VT';
+  if (pickerMarker) { pickerMap.removeLayer(pickerMarker); pickerMarker = null; }
+}
+
+function showAlert(msg, type = 'success') {
+  const el = document.getElementById('form-alert');
+  el.className = `alert alert-${type}`;
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+// ── Submit ────────────────────────────────────────
+document.getElementById('btn-submit').addEventListener('click', async () => {
+  const name = document.getElementById('f-name').value.trim();
+  const org  = document.getElementById('f-organization').value.trim();
+  const lat  = document.getElementById('f-lat').value.trim();
+  const lon  = document.getElementById('f-lon').value.trim();
+
+  if (!name) { showAlert('Item name is required.', 'error'); return; }
+  if (!org)  { showAlert('Organization is required.', 'error'); return; }
+  if (!lat || !lon) { showAlert('Please click the map or enter coordinates.', 'error'); return; }
+
+  const data = {
+    name:         name,
+    category:     document.getElementById('f-category').value,
+    systemType:   document.getElementById('f-systemType').value,
+    status:       document.getElementById('f-status').value,
+    quantity:     parseInt(document.getElementById('f-quantity').value) || 1,
+    organization: org,
+    town:         document.getElementById('f-town').value.trim(),
+    state:        document.getElementById('f-state').value,
+    contact:      document.getElementById('f-contact').value.trim(),
+    description:  document.getElementById('f-description').value.trim(),
+    lat:          parseFloat(lat),
+    lon:          parseFloat(lon)
+  };
+
+  if (editingId) {
+    // For base items in edit mode, we only allow status updates via the manage table
+    VRWAData.updateItem(editingId, data);
+    showAlert('Item updated successfully.');
+  } else {
+    VRWAData.addItem(data);
+    showAlert('Item added successfully.');
+  }
+
+  resetForm();
+  await loadItems();
+});
+
+document.getElementById('btn-cancel').addEventListener('click', resetForm);
+
+// ── Load items table ──────────────────────────────
+async function loadItems() {
+  allItems = await VRWAData.getAllItems();
+  renderManageTable();
+}
+
+function renderManageTable() {
+  const q   = document.getElementById('manage-search').value.toLowerCase();
+  const st  = document.getElementById('manage-filter-status').value;
+  const tbody = document.getElementById('manage-tbody');
+
+  const filtered = allItems.filter(item => {
+    if (st && item.status !== st) return false;
+    if (q) {
+      const hay = [item.name, item.organization, item.town].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr class="no-results"><td colspan="5">No items found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(item => {
+    const icon   = CATEGORY_ICONS[item.category] || '📦';
+    const stLbl  = STATUSES[item.status] || item.status;
+    const color  = STATUS_COLORS[item.status] || '#999';
+    const isBase = item.source === 'base';
+
+    const editBtn = isBase
+      ? '' // base items: only status changes allowed via quick-select
+      : `<button class="btn btn-sm btn-edit" onclick="startEdit('${item.id}')">✏ Edit</button>`;
+
+    const delBtn = isBase
+      ? ''
+      : `<button class="btn btn-sm btn-delete" onclick="confirmDelete('${item.id}','${item.name.replace(/'/g,"\\'")}')">🗑 Delete</button>`;
+
+    const statusSel = `
+      <select class="filter-select" style="font-size:0.78rem;padding:0.2rem 0.4rem"
+              onchange="quickStatus('${item.id}', this.value)">
+        <option value="available"   ${item.status==='available'   ?'selected':''}>✅ Available</option>
+        <option value="deployed"    ${item.status==='deployed'    ?'selected':''}>🔶 Deployed</option>
+        <option value="unavailable" ${item.status==='unavailable' ?'selected':''}>🔴 Unavailable</option>
+      </select>`;
+
+    return `<tr>
+      <td>
+        <strong>${icon} ${item.name}</strong>
+        ${isBase ? '<span class="readonly-tag">base</span>' : '<span class="readonly-tag" style="border-color:#bee3f8;color:#2e86c1">local</span>'}
+        <div style="font-size:0.75rem;color:#7f8c8d">${item.category}</div>
+      </td>
+      <td>${item.organization || '—'}</td>
+      <td>${item.town || '—'}, ${item.state || '—'}</td>
+      <td>${statusSel}</td>
+      <td style="white-space:nowrap;display:flex;gap:0.4rem;padding-top:0.65rem">${editBtn}${delBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Quick status change ───────────────────────────
+async function quickStatus(id, newStatus) {
+  VRWAData.updateItem(id, { status: newStatus });
+  allItems = await VRWAData.getAllItems();
+  renderManageTable();
+}
+
+// ── Edit user item ────────────────────────────────
+function startEdit(id) {
+  const item = allItems.find(i => i.id === id);
+  if (!item) return;
+
+  editingId   = id;
+  editingBase = item.source === 'base';
+
+  document.getElementById('form-title').textContent   = 'Edit Item';
+  document.getElementById('btn-submit').textContent   = '💾 Save Changes';
+  document.getElementById('btn-cancel').style.display = 'inline-flex';
+
+  document.getElementById('f-name').value         = item.name;
+  document.getElementById('f-category').value     = item.category;
+  document.getElementById('f-systemType').value   = item.systemType;
+  document.getElementById('f-status').value       = item.status;
+  document.getElementById('f-quantity').value     = item.quantity;
+  document.getElementById('f-organization').value = item.organization;
+  document.getElementById('f-town').value         = item.town;
+  document.getElementById('f-state').value        = item.state;
+  document.getElementById('f-contact').value      = item.contact;
+  document.getElementById('f-description').value  = item.description;
+  document.getElementById('f-lat').value          = item.lat;
+  document.getElementById('f-lon').value          = item.lon;
+
+  if (pickerMarker) pickerMap.removeLayer(pickerMarker);
+  pickerMarker = L.marker([item.lat, item.lon]).addTo(pickerMap);
+  pickerMap.setView([item.lat, item.lon], 12);
+
+  document.getElementById('form-card').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── Delete user item ──────────────────────────────
+function confirmDelete(id, name) {
+  if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+  VRWAData.deleteItem(id);
+  loadItems();
+}
+
+// ── Search/filter in manage table ─────────────────
+document.getElementById('manage-search').addEventListener('input', renderManageTable);
+document.getElementById('manage-filter-status').addEventListener('change', renderManageTable);
+
+// ── Export ────────────────────────────────────────
+document.getElementById('btn-export').addEventListener('click', async () => {
+  const json = await VRWAData.exportGeoJSON();
+  const blob = new Blob([json], { type: 'application/json' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'vrwa-mutual-aid.geojson';
+  a.click();
+});
+
+// ── Init ──────────────────────────────────────────
+loadItems();
+</script>
+</body>
+</html>
