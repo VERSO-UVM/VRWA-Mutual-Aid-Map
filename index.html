@@ -6,6 +6,10 @@
   <title>VRWA Mutual Aid Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    html, body { height: 100%; }
+    #map { height: calc(100vh - 70px - 80px); width: 100%; display: block; }
+  </style>
 </head>
 <body>
 
@@ -31,12 +35,15 @@
 <script>
 const { STATUS_COLORS, CATEGORY_ICONS, SYSTEM_TYPES, STATUSES } = VRWAData;
 
-const map = L.map('map').setView([44.2, -72.6], 7);
+const map = L.map('map', { zoomControl: true }).setView([44.2, -72.6], 7);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
+
+// Force Leaflet to recalculate container size after layout settles
+window.addEventListener('load', function() { map.invalidateSize(); });
 
 // ── Legend ────────────────────────────────────────
 const legend = L.control({ position: 'bottomright' });
@@ -132,5 +139,10 @@ document.addEventListener('change', function(e) {
   }
 });
 </script>
+<footer>
+  <strong>Vermont Rural Water Association</strong> · Mutual Aid Map<br>
+  20 Susie Wilson Road, Suite B, Essex Junction, VT 05452 · <a href="mailto:info@vtruralwater.org">info@vtruralwater.org</a> · 802-660-4988<br>
+  <a href="https://vtruralwater.org" target="_blank" rel="noopener">vtruralwater.org</a> · <a href="https://vtruralwater.org/vt-warn/" target="_blank" rel="noopener">VT WARN</a> · <a href="about.html">About This Map</a>
+</footer>
 </body>
 </html>
