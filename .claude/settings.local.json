@@ -3,7 +3,9 @@
     "allow": [
       "WebFetch(domain:www.epa.gov)",
       "WebFetch(domain:vtruralwater.org)",
-      "WebFetch(domain:dec.vermont.gov)"
+      "WebFetch(domain:dec.vermont.gov)",
+      "WebFetch(domain:verso-uvm.github.io)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }
