@@ -5,6 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resource List – VRWA Mutual Aid Map</title>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .list-category-toggles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem 0.75rem;
+      width: 100%;
+      margin-top: 0.25rem;
+      padding-top: 0.2rem;
+      border-top: 1px solid var(--border);
+    }
+    .list-category-toggles .category-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      user-select: none;
+    }
+  </style>
 </head>
 <body>
 
@@ -66,10 +85,8 @@
       <option value="CT">Connecticut</option>
       <option value="RI">Rhode Island</option>
     </select>
-    <select id="filter-category" class="filter-select">
-      <option value="">All Categories</option>
-    </select>
     <button id="btn-export" class="btn btn-secondary" style="margin-left:auto">⬇ Export GeoJSON</button>
+    <div id="category-toggles" class="list-category-toggles"></div>
   </div>
 
   <!-- Table -->
@@ -104,14 +121,17 @@ const { SYSTEM_TYPES, STATUSES, CATEGORIES, CATEGORY_ICONS } = VRWAData;
 let allItems = [];
 let sortCol  = 'name';
 let sortDir  = 1; // 1 = asc, -1 = desc
+const activeCategories = new Set(CATEGORIES);
 
-// Populate category filter
-const catSel = document.getElementById('filter-category');
-CATEGORIES.forEach(c => {
-  const o = document.createElement('option');
-  o.value = c; o.textContent = c;
-  catSel.appendChild(o);
-});
+function renderCategoryToggles() {
+  const wrap = document.getElementById('category-toggles');
+  wrap.innerHTML = CATEGORIES.map(category => `
+    <label class="category-toggle">
+      <input type="checkbox" class="js-list-category-toggle" value="${category}" checked>
+      <span>${CATEGORY_ICONS[category] || '📦'} ${category}</span>
+    </label>
+  `).join('');
+}
 
 // ── Load data ─────────────────────────────────────
 async function init() {
@@ -134,13 +154,12 @@ function getFiltered() {
   const st   = document.getElementById('filter-status').value;
   const ty   = document.getElementById('filter-type').value;
   const sta  = document.getElementById('filter-state').value;
-  const cat  = document.getElementById('filter-category').value;
 
   return allItems.filter(item => {
     if (st  && item.status     !== st)  return false;
     if (ty  && item.systemType !== ty)  return false;
     if (sta && item.state      !== sta) return false;
-    if (cat && item.category   !== cat) return false;
+    if (!activeCategories.has(item.category || 'Other')) return false;
     if (q) {
       const haystack = [item.name, item.organization, item.town, item.category, item.description].join(' ').toLowerCase();
       if (!haystack.includes(q)) return false;
@@ -211,8 +230,19 @@ document.querySelectorAll('th[data-col]').forEach(th => {
 });
 
 // ── Filter change ─────────────────────────────────
-['search','filter-status','filter-type','filter-state','filter-category'].forEach(id => {
+['search','filter-status','filter-type','filter-state'].forEach(id => {
   document.getElementById(id).addEventListener('input', render);
+});
+
+document.addEventListener('change', function(e) {
+  if (!e.target.classList.contains('js-list-category-toggle')) return;
+  const category = e.target.value;
+  if (e.target.checked) {
+    activeCategories.add(category);
+  } else {
+    activeCategories.delete(category);
+  }
+  render();
 });
 
 // ── Export ────────────────────────────────────────
@@ -225,6 +255,7 @@ document.getElementById('btn-export').addEventListener('click', async () => {
   a.click();
 });
 
+renderCategoryToggles();
 init();
 </script>
 <footer>
