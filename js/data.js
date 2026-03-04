@@ -69,7 +69,8 @@ function getTodayDate() {
 }
 
 function featureToItem(f) {
-  const p = f.properties || {};
+  const p    = f.properties || {};
+  const coords = f.geometry && f.geometry.coordinates;
   return {
     id:           p.id          || genId(),
     name:         p.name        || '',
@@ -83,8 +84,8 @@ function featureToItem(f) {
     description:  p.description || '',
     contact:      p.contact     || '',
     lastUpdated:  p.lastUpdated || '',
-    lat:          f.geometry.coordinates[1],
-    lon:          f.geometry.coordinates[0],
+    lat:          coords ? coords[1] : null,
+    lon:          coords ? coords[0] : null,
     source:       'base'
   };
 }
@@ -112,53 +113,48 @@ function itemToFeature(item) {
 
 // ── Storage ───────────────────────────────────────────────────────────────────
 
-function loadUserItems() {
-  try { return JSON.parse(localStorage.getItem(DATA_KEY) || '[]'); } catch { return []; }
+function isStorageAvailable() {
+  try { localStorage.setItem('__test', '1'); localStorage.removeItem('__test'); return true; }
+  catch { return false; }
+}
+const _storageAvailable = isStorageAvailable();
+
+function storageGet(key, fallback) {
+  if (!_storageAvailable) return fallback;
+  try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch { return fallback; }
 }
 
-function saveUserItems(items) {
-  localStorage.setItem(DATA_KEY, JSON.stringify(items));
+function storageSet(key, value) {
+  if (!_storageAvailable) return;
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* quota exceeded or blocked */ }
 }
 
-function loadOverrides() {
-  try { return JSON.parse(localStorage.getItem(OVER_KEY) || '{}'); } catch { return {}; }
-}
-
-function saveOverrides(ov) {
-  localStorage.setItem(OVER_KEY, JSON.stringify(ov));
-}
-
-function loadBaseEdits() {
-  try { return JSON.parse(localStorage.getItem(EDIT_KEY) || '{}'); } catch { return {}; }
-}
-
-function saveBaseEdits(edits) {
-  localStorage.setItem(EDIT_KEY, JSON.stringify(edits));
-}
-
+function loadUserItems()       { return storageGet(DATA_KEY,  []); }
+function saveUserItems(items)  { storageSet(DATA_KEY,  items); }
+function loadOverrides()       { return storageGet(OVER_KEY, {}); }
+function saveOverrides(ov)     { storageSet(OVER_KEY, ov); }
+function loadBaseEdits()       { return storageGet(EDIT_KEY, {}); }
+function saveBaseEdits(edits)  { storageSet(EDIT_KEY, edits); }
 function loadDeletedIds() {
-  try {
-    const value = JSON.parse(localStorage.getItem(DEL_KEY) || '[]');
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
-  }
+  const value = storageGet(DEL_KEY, []);
+  return Array.isArray(value) ? value : [];
 }
-
-function saveDeletedIds(ids) {
-  localStorage.setItem(DEL_KEY, JSON.stringify(ids));
-}
+function saveDeletedIds(ids) { storageSet(DEL_KEY, ids); }
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
-let _base = null; // cached base items
+let _basePromise = null; // cached Promise to avoid race conditions
 
-async function fetchBase() {
-  if (_base) return _base;
-  const r = await fetch('locations.geojson');
-  const d = await r.json();
-  _base = d.features.map(featureToItem);
-  return _base;
+function fetchBase() {
+  if (_basePromise) return _basePromise;
+  _basePromise = fetch('locations.geojson')
+    .then(r => {
+      if (!r.ok) throw new Error(`Failed to load locations.geojson: ${r.status}`);
+      return r.json();
+    })
+    .then(d => (d.features || []).map(featureToItem))
+    .catch(err => { _basePromise = null; throw err; }); // reset on failure so retries work
+  return _basePromise;
 }
 
 async function getAllItems() {

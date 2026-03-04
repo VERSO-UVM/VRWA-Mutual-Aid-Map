@@ -123,6 +123,15 @@ const {
   CATEGORY_ICONS: DATA_CATEGORY_ICONS
 } = VRWAData;
 
+function esc(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 let allItems = [];
 let sortCol  = 'name';
 let sortDir  = 1; // 1 = asc, -1 = desc
@@ -140,9 +149,15 @@ function renderCategoryToggles() {
 
 // ── Load data ─────────────────────────────────────
 async function init() {
-  allItems = await VRWAData.getAllItems();
-  updateStats(allItems);
-  render();
+  try {
+    allItems = await VRWAData.getAllItems();
+    updateStats(allItems);
+    render();
+  } catch (err) {
+    console.error('Failed to load items:', err);
+    document.getElementById('table-body').innerHTML =
+      '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#c0392b">Failed to load data. Please refresh the page.</td></tr>';
+  }
 }
 
 function updateStats(items) {
@@ -203,21 +218,22 @@ function render() {
 
   tbody.innerHTML = filtered.map(item => {
     const icon   = DATA_CATEGORY_ICONS[item.category] || '📦';
-    const sysLbl = DATA_SYSTEM_TYPES[item.systemType]  || item.systemType;
-    const stLbl  = DATA_STATUSES[item.status]          || item.status;
+    const sysLbl = esc(DATA_SYSTEM_TYPES[item.systemType] || item.systemType);
+    const stLbl  = esc(DATA_STATUSES[item.status]         || item.status);
+    const desc   = item.description ? item.description.slice(0, 90) + (item.description.length > 90 ? '…' : '') : '';
     return `<tr>
-      <td><strong>${icon} ${item.name}</strong>
-        ${item.description ? `<div style="font-size:0.76rem;color:#7f8c8d;margin-top:0.15rem">${item.description.slice(0,90)}${item.description.length > 90 ? '…' : ''}</div>` : ''}
+      <td><strong>${icon} ${esc(item.name)}</strong>
+        ${desc ? `<div style="font-size:0.76rem;color:#7f8c8d;margin-top:0.15rem">${esc(desc)}</div>` : ''}
       </td>
-      <td>${item.category}</td>
-      <td><span class="badge badge-${item.systemType}">${sysLbl}</span></td>
-      <td>${item.organization || '—'}
-        ${item.contact ? `<div style="font-size:0.73rem;color:#2e86c1;margin-top:0.1rem">${item.contact}</div>` : ''}
+      <td>${esc(item.category)}</td>
+      <td><span class="badge badge-${esc(item.systemType)}">${sysLbl}</span></td>
+      <td>${esc(item.organization || '—')}
+        ${item.contact ? `<div style="font-size:0.73rem;color:#2e86c1;margin-top:0.1rem">${esc(item.contact)}</div>` : ''}
       </td>
-      <td>${item.town || '—'}</td>
-      <td>${item.state || '—'}</td>
-      <td style="text-align:center">${item.quantity}</td>
-      <td><span class="badge badge-${item.status}">${stLbl}</span></td>
+      <td>${esc(item.town || '—')}</td>
+      <td>${esc(item.state || '—')}</td>
+      <td style="text-align:center">${esc(String(item.quantity))}</td>
+      <td><span class="badge badge-${esc(item.status)}">${stLbl}</span></td>
     </tr>`;
   }).join('');
 
@@ -235,7 +251,12 @@ document.querySelectorAll('th[data-col]').forEach(th => {
 });
 
 // ── Filter change ─────────────────────────────────
-['search','filter-status','filter-type','filter-state'].forEach(id => {
+let _searchDebounce = null;
+document.getElementById('search').addEventListener('input', () => {
+  clearTimeout(_searchDebounce);
+  _searchDebounce = setTimeout(render, 200);
+});
+['filter-status','filter-type','filter-state'].forEach(id => {
   document.getElementById(id).addEventListener('input', render);
 });
 

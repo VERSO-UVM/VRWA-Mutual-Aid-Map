@@ -3,8 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self'; object-src 'none'; worker-src 'none'">
   <title>Manage Items – VRWA Mutual Aid Map</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H"
+        crossorigin="anonymous" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -168,7 +171,9 @@
 </div><!-- /manage-page -->
 </div><!-- /page -->
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH"
+        crossorigin="anonymous"></script>
 <script src="js/data.js"></script>
 <script>
 const {
@@ -190,7 +195,7 @@ DATA_CATEGORIES.forEach(c => {
 const pickerMap = L.map('picker-map').setView([44.2, -72.6], 7);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
-  attribution: '© OpenStreetMap contributors'
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(pickerMap);
 
 let pickerMarker = null;
@@ -219,16 +224,24 @@ function syncPickerFromInputs() {
   }
 }
 
+// ── HTML escape helper ────────────────────────────
+function esc(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // ── Form state ────────────────────────────────────
 let editingId   = null;
-let editingBase = false;
 let allItems    = [];
 let manageSortCol = 'item';
 let manageSortDir = 1; // 1 = asc, -1 = desc
 
 function resetForm() {
   editingId   = null;
-  editingBase = false;
   document.getElementById('form-title').textContent  = 'Add New Resource';
   document.getElementById('btn-submit').textContent  = '➕ Add Item';
   document.getElementById('btn-cancel').style.display = 'none';
@@ -256,46 +269,62 @@ function showAlert(msg, type = 'success') {
 document.getElementById('btn-submit').addEventListener('click', async () => {
   const name = document.getElementById('f-name').value.trim();
   const org  = document.getElementById('f-organization').value.trim();
-  const lat  = document.getElementById('f-lat').value.trim();
-  const lon  = document.getElementById('f-lon').value.trim();
+  const latStr = document.getElementById('f-lat').value.trim();
+  const lonStr = document.getElementById('f-lon').value.trim();
 
   if (!name) { showAlert('Item name is required.', 'error'); return; }
   if (!org)  { showAlert('Organization is required.', 'error'); return; }
-  if (!lat || !lon) { showAlert('Please click the map or enter coordinates.', 'error'); return; }
+  if (!latStr || !lonStr) { showAlert('Please click the map or enter coordinates.', 'error'); return; }
+
+  const latVal = parseFloat(latStr);
+  const lonVal = parseFloat(lonStr);
+  if (isNaN(latVal) || latVal < -90  || latVal > 90)  { showAlert('Latitude must be between -90 and 90.', 'error');   return; }
+  if (isNaN(lonVal) || lonVal < -180 || lonVal > 180) { showAlert('Longitude must be between -180 and 180.', 'error'); return; }
 
   const data = {
     name:         name,
     category:     document.getElementById('f-category').value,
     systemType:   document.getElementById('f-systemType').value,
     status:       document.getElementById('f-status').value,
-    quantity:     parseInt(document.getElementById('f-quantity').value) || 1,
+    quantity:     Math.max(1, parseInt(document.getElementById('f-quantity').value, 10) || 1),
     organization: org,
     town:         document.getElementById('f-town').value.trim(),
     state:        document.getElementById('f-state').value,
     contact:      document.getElementById('f-contact').value.trim(),
     description:  document.getElementById('f-description').value.trim(),
-    lat:          parseFloat(lat),
-    lon:          parseFloat(lon)
+    lat:          latVal,
+    lon:          lonVal
   };
 
-  if (editingId) {
-    VRWAData.updateItem(editingId, data);
-    showAlert('Item updated successfully.');
-  } else {
-    VRWAData.addItem(data);
-    showAlert('Item added successfully.');
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  try {
+    if (editingId) {
+      VRWAData.updateItem(editingId, data);
+      showAlert('Item updated successfully.');
+    } else {
+      VRWAData.addItem(data);
+      showAlert('Item added successfully.');
+    }
+    resetForm();
+    await loadItems();
+  } finally {
+    btn.disabled = false;
   }
-
-  resetForm();
-  await loadItems();
 });
 
 document.getElementById('btn-cancel').addEventListener('click', resetForm);
 
 // ── Load items table ──────────────────────────────
 async function loadItems() {
-  allItems = await VRWAData.getAllItems();
-  renderManageTable();
+  try {
+    allItems = await VRWAData.getAllItems();
+    renderManageTable();
+  } catch (err) {
+    console.error('Failed to load items:', err);
+    document.getElementById('manage-tbody').innerHTML =
+      '<tr><td colspan="5" style="text-align:center;padding:2rem;color:#c0392b">Failed to load data. Please refresh the page.</td></tr>';
+  }
 }
 
 function renderManageTable() {
@@ -353,13 +382,12 @@ function renderManageTable() {
     const stLbl  = DATA_STATUSES[item.status] || item.status;
     const isBase = item.source === 'base';
 
-      const editBtn = `<button class="btn btn-sm btn-edit" onclick="startEdit('${item.id}')">✏ Edit</button>`;
-
-      const delBtn = `<button class="btn btn-sm btn-delete" onclick="confirmDelete('${item.id}','${item.name.replace(/'/g,"\\'")}')">🗑 Delete</button>`;
+    const editBtn = `<button class="btn btn-sm btn-edit" data-edit-id="${esc(item.id)}">✏ Edit</button>`;
+    const delBtn  = `<button class="btn btn-sm btn-delete" data-delete-id="${esc(item.id)}" data-delete-name="${esc(item.name)}">🗑 Delete</button>`;
 
     const statusSel = `
       <select class="filter-select" style="font-size:0.78rem;padding:0.2rem 0.4rem"
-              onchange="quickStatus('${item.id}', this.value)">
+              data-status-id="${esc(item.id)}">
         <option value="available"   ${item.status==='available'   ?'selected':''}>✅ Available</option>
         <option value="deployed"    ${item.status==='deployed'    ?'selected':''}>🔶 Deployed</option>
         <option value="unavailable" ${item.status==='unavailable' ?'selected':''}>🔴 Unavailable</option>
@@ -367,12 +395,12 @@ function renderManageTable() {
 
     return `<tr>
       <td>
-        <strong>${icon} ${item.name}</strong>
+        <strong>${icon} ${esc(item.name)}</strong>
         ${isBase ? '<span class="readonly-tag">base</span>' : '<span class="readonly-tag" style="border-color:#bee3f8;color:#2e86c1">local</span>'}
-        <div style="font-size:0.75rem;color:#7f8c8d">${item.category}</div>
+        <div style="font-size:0.75rem;color:#7f8c8d">${esc(item.category)}</div>
       </td>
-      <td>${item.organization || '—'}</td>
-      <td>${item.town || '—'}, ${item.state || '—'}</td>
+      <td>${esc(item.organization || '—')}</td>
+      <td>${esc(item.town || '—')}, ${esc(item.state || '—')}</td>
       <td>${statusSel}</td>
       <td style="white-space:nowrap;vertical-align:middle">
         <div style="display:flex;gap:0.4rem;align-items:center">${editBtn}${delBtn}</div>
@@ -380,6 +408,19 @@ function renderManageTable() {
     </tr>`;
   }).join('');
 }
+
+// ── Event delegation for table actions ───────────
+document.getElementById('manage-tbody').addEventListener('click', function(e) {
+  const editBtn = e.target.closest('[data-edit-id]');
+  const delBtn  = e.target.closest('[data-delete-id]');
+  if (editBtn) startEdit(editBtn.dataset.editId);
+  if (delBtn)  confirmDelete(delBtn.dataset.deleteId, delBtn.dataset.deleteName);
+});
+
+document.getElementById('manage-tbody').addEventListener('change', function(e) {
+  const sel = e.target.closest('[data-status-id]');
+  if (sel) quickStatus(sel.dataset.statusId, sel.value);
+});
 
 // ── Quick status change ───────────────────────────
 async function quickStatus(id, newStatus) {
@@ -393,8 +434,7 @@ function startEdit(id) {
   const item = allItems.find(i => i.id === id);
   if (!item) return;
 
-  editingId   = id;
-  editingBase = item.source === 'base';
+  editingId = id;
 
   document.getElementById('form-title').textContent   = 'Edit Item';
   document.getElementById('btn-submit').textContent   = '💾 Save Changes';
