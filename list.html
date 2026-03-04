@@ -116,19 +116,24 @@
 
 <script src="js/data.js"></script>
 <script>
-const { SYSTEM_TYPES, STATUSES, CATEGORIES, CATEGORY_ICONS } = VRWAData;
+const {
+  SYSTEM_TYPES: DATA_SYSTEM_TYPES,
+  STATUSES: DATA_STATUSES,
+  CATEGORIES: DATA_CATEGORIES,
+  CATEGORY_ICONS: DATA_CATEGORY_ICONS
+} = VRWAData;
 
 let allItems = [];
 let sortCol  = 'name';
 let sortDir  = 1; // 1 = asc, -1 = desc
-const activeCategories = new Set(CATEGORIES);
+const activeCategories = new Set(DATA_CATEGORIES);
 
 function renderCategoryToggles() {
   const wrap = document.getElementById('category-toggles');
-  wrap.innerHTML = CATEGORIES.map(category => `
+  wrap.innerHTML = DATA_CATEGORIES.map(category => `
     <label class="category-toggle">
       <input type="checkbox" class="js-list-category-toggle" value="${category}" checked>
-      <span>${CATEGORY_ICONS[category] || '📦'} ${category}</span>
+      <span>${DATA_CATEGORY_ICONS[category] || '📦'} ${category}</span>
     </label>
   `).join('');
 }
@@ -197,9 +202,9 @@ function render() {
   }
 
   tbody.innerHTML = filtered.map(item => {
-    const icon   = CATEGORY_ICONS[item.category] || '📦';
-    const sysLbl = SYSTEM_TYPES[item.systemType]  || item.systemType;
-    const stLbl  = STATUSES[item.status]          || item.status;
+    const icon   = DATA_CATEGORY_ICONS[item.category] || '📦';
+    const sysLbl = DATA_SYSTEM_TYPES[item.systemType]  || item.systemType;
+    const stLbl  = DATA_STATUSES[item.status]          || item.status;
     return `<tr>
       <td><strong>${icon} ${item.name}</strong>
         ${item.description ? `<div style="font-size:0.76rem;color:#7f8c8d;margin-top:0.15rem">${item.description.slice(0,90)}${item.description.length > 90 ? '…' : ''}</div>` : ''}

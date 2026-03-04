@@ -171,13 +171,18 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/data.js"></script>
 <script>
-const { CATEGORIES, CATEGORY_ICONS, STATUSES, STATUS_COLORS } = VRWAData;
+const {
+  CATEGORIES: DATA_CATEGORIES,
+  CATEGORY_ICONS: DATA_CATEGORY_ICONS,
+  STATUSES: DATA_STATUSES,
+  STATUS_COLORS: DATA_STATUS_COLORS
+} = VRWAData;
 
 // ── Populate category select ──────────────────────
 const catSel = document.getElementById('f-category');
-CATEGORIES.forEach(c => {
+DATA_CATEGORIES.forEach(c => {
   const o = document.createElement('option');
-  o.value = c; o.textContent = `${CATEGORY_ICONS[c] || ''} ${c}`;
+  o.value = c; o.textContent = `${DATA_CATEGORY_ICONS[c] || ''} ${c}`;
   catSel.appendChild(o);
 });
 
@@ -229,7 +234,7 @@ function resetForm() {
   ['f-name','f-organization','f-town','f-contact','f-description','f-lat','f-lon'].forEach(id => {
     document.getElementById(id).value = '';
   });
-  document.getElementById('f-category').value   = CATEGORIES[0];
+  document.getElementById('f-category').value   = DATA_CATEGORIES[0];
   document.getElementById('f-systemType').value = 'both';
   document.getElementById('f-status').value     = 'available';
   document.getElementById('f-quantity').value   = '1';
@@ -312,9 +317,9 @@ function renderManageTable() {
   }
 
   tbody.innerHTML = filtered.map(item => {
-    const icon   = CATEGORY_ICONS[item.category] || '📦';
-    const stLbl  = STATUSES[item.status] || item.status;
-    const color  = STATUS_COLORS[item.status] || '#999';
+    const icon   = DATA_CATEGORY_ICONS[item.category] || '📦';
+    const stLbl  = DATA_STATUSES[item.status] || item.status;
+    const color  = DATA_STATUS_COLORS[item.status] || '#999';
     const isBase = item.source === 'base';
 
     const editBtn = isBase

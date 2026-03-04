@@ -92,7 +92,13 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="js/data.js"></script>
 <script>
-const { STATUS_COLORS, CATEGORY_ICONS, CATEGORIES, SYSTEM_TYPES, STATUSES } = VRWAData;
+const {
+  STATUS_COLORS: DATA_STATUS_COLORS,
+  CATEGORY_ICONS: DATA_CATEGORY_ICONS,
+  CATEGORIES: DATA_CATEGORIES,
+  SYSTEM_TYPES: DATA_SYSTEM_TYPES,
+  STATUSES: DATA_STATUSES
+} = VRWAData;
 
 const map = L.map('map', { zoomControl: true }).setView([44.2, -72.6], 7);
 
@@ -105,7 +111,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 window.addEventListener('load', function() { map.invalidateSize(); });
 
 const defaultView = { center: [44.2, -72.6], zoom: 7 };
-const activeCategories = new Set(CATEGORIES);
+const activeCategories = new Set(DATA_CATEGORIES);
 const itemById = new Map();
 
 function esc(value) {
@@ -118,7 +124,7 @@ function esc(value) {
 }
 
 function buildSummaryPopup(item) {
-  const icon = CATEGORY_ICONS[item.category] || '📦';
+  const icon = DATA_CATEGORY_ICONS[item.category] || '📦';
   return `
     <div class="popup-title">${icon} ${esc(item.name || 'Unnamed Item')}</div>
     <a href="#" class="popup-more js-popup-more" data-item-id="${esc(item.id)}">More</a>
@@ -126,10 +132,10 @@ function buildSummaryPopup(item) {
 }
 
 function buildDetailPopup(item) {
-  const color = STATUS_COLORS[item.status] || '#999';
-  const icon = CATEGORY_ICONS[item.category] || '📦';
-  const systemType = SYSTEM_TYPES[item.systemType] || item.systemType || '—';
-  const status = STATUSES[item.status] || item.status || '—';
+  const color = DATA_STATUS_COLORS[item.status] || '#999';
+  const icon = DATA_CATEGORY_ICONS[item.category] || '📦';
+  const systemType = DATA_SYSTEM_TYPES[item.systemType] || item.systemType || '—';
+  const status = DATA_STATUSES[item.status] || item.status || '—';
 
   return `
     <div class="popup-title">${icon} ${esc(item.name || 'Unnamed Item')}</div>
@@ -145,8 +151,8 @@ function buildDetailPopup(item) {
 }
 
 function buildMarkerIcon(item) {
-  const color = STATUS_COLORS[item.status] || '#999';
-  const icon = CATEGORY_ICONS[item.category] || '📦';
+  const color = DATA_STATUS_COLORS[item.status] || '#999';
+  const icon = DATA_CATEGORY_ICONS[item.category] || '📦';
   return L.divIcon({
     className: 'vrwa-marker-icon',
     html: `<div class="vrwa-marker-dot" style="background:${color}">${icon}</div>`,
@@ -175,10 +181,10 @@ const filterCtrl = L.control({ position: 'topleft' });
 filterCtrl.onAdd = function() {
   const div = L.DomUtil.create('div', 'map-legend');
   div.style.padding = '0.6rem 0.8rem';
-  const categoriesHtml = CATEGORIES.map(category => `
+  const categoriesHtml = DATA_CATEGORIES.map(category => `
     <label class="category-toggle">
       <input type="checkbox" class="js-category-toggle" value="${esc(category)}" checked>
-      <span>${esc(CATEGORY_ICONS[category] || '📦')} ${esc(category)}</span>
+      <span>${esc(DATA_CATEGORY_ICONS[category] || '📦')} ${esc(category)}</span>
     </label>
   `).join('');
 
