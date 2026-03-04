@@ -5,10 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VRWA Mutual Aid Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <link rel="stylesheet" href="css/style.css" />
   <style>
     html, body { height: 100%; }
     #map { height: calc(100vh - 70px - 80px); width: 100%; display: block; }
+    .vrwa-marker-icon {
+      background: transparent;
+      border: none;
+    }
+    .vrwa-marker-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 14px;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.22);
+    }
+    .vrwa-cluster-icon {
+      background: transparent;
+      border: none;
+    }
+    .vrwa-cluster-bubble {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary);
+      color: #fff;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.25);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .category-filter-list {
+      max-height: 180px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .category-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0.12rem 0;
+      font-size: 0.78rem;
+      color: #666;
+    }
+    .popup-more {
+      display: inline-block;
+      margin-top: 0.42rem;
+      color: #2ea3f2;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.8rem;
+    }
+    .popup-more:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -31,9 +89,10 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="js/data.js"></script>
 <script>
-const { STATUS_COLORS, CATEGORY_ICONS, SYSTEM_TYPES, STATUSES } = VRWAData;
+const { STATUS_COLORS, CATEGORY_ICONS, CATEGORIES, SYSTEM_TYPES, STATUSES } = VRWAData;
 
 const map = L.map('map', { zoomControl: true }).setView([44.2, -72.6], 7);
 
@@ -44,6 +103,58 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 // Force Leaflet to recalculate container size after layout settles
 window.addEventListener('load', function() { map.invalidateSize(); });
+
+const defaultView = { center: [44.2, -72.6], zoom: 7 };
+const activeCategories = new Set(CATEGORIES);
+const itemById = new Map();
+
+function esc(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function buildSummaryPopup(item) {
+  const icon = CATEGORY_ICONS[item.category] || '📦';
+  return `
+    <div class="popup-title">${icon} ${esc(item.name || 'Unnamed Item')}</div>
+    <a href="#" class="popup-more js-popup-more" data-item-id="${esc(item.id)}">More</a>
+  `;
+}
+
+function buildDetailPopup(item) {
+  const color = STATUS_COLORS[item.status] || '#999';
+  const icon = CATEGORY_ICONS[item.category] || '📦';
+  const systemType = SYSTEM_TYPES[item.systemType] || item.systemType || '—';
+  const status = STATUSES[item.status] || item.status || '—';
+
+  return `
+    <div class="popup-title">${icon} ${esc(item.name || 'Unnamed Item')}</div>
+    <div class="popup-row"><span class="popup-label">Category</span><span class="popup-val">${esc(item.category || 'Other')}</span></div>
+    <div class="popup-row"><span class="popup-label">Organization</span><span class="popup-val">${esc(item.organization || '—')}</span></div>
+    <div class="popup-row"><span class="popup-label">Location</span><span class="popup-val">${esc(item.town || '—')}, ${esc(item.state || '—')}</span></div>
+    <div class="popup-row"><span class="popup-label">System</span><span class="popup-val">${esc(systemType)}</span></div>
+    <div class="popup-row"><span class="popup-label">Qty</span><span class="popup-val">${esc(item.quantity || '—')}</span></div>
+    <div class="popup-row"><span class="popup-label">Status</span><span class="popup-val"><strong style="color:${color}">${esc(status)}</strong></span></div>
+    ${item.description ? `<div style="margin-top:0.5rem;font-size:0.78rem;color:#555;line-height:1.4">${esc(item.description)}</div>` : ''}
+    ${item.contact ? `<div style="margin-top:0.4rem;font-size:0.78rem;color:#2e86c1">📞 ${esc(item.contact)}</div>` : ''}
+  `;
+}
+
+function buildMarkerIcon(item) {
+  const color = STATUS_COLORS[item.status] || '#999';
+  const icon = CATEGORY_ICONS[item.category] || '📦';
+  return L.divIcon({
+    className: 'vrwa-marker-icon',
+    html: `<div class="vrwa-marker-dot" style="background:${color}">${icon}</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -12]
+  });
+}
 
 // ── Legend ────────────────────────────────────────
 const legend = L.control({ position: 'bottomright' });
@@ -64,80 +175,94 @@ const filterCtrl = L.control({ position: 'topleft' });
 filterCtrl.onAdd = function() {
   const div = L.DomUtil.create('div', 'map-legend');
   div.style.padding = '0.6rem 0.8rem';
+  const categoriesHtml = CATEGORIES.map(category => `
+    <label class="category-toggle">
+      <input type="checkbox" class="js-category-toggle" value="${esc(category)}" checked>
+      <span>${esc(CATEGORY_ICONS[category] || '📦')} ${esc(category)}</span>
+    </label>
+  `).join('');
+
   div.innerHTML = `
-    <h4 style="margin-bottom:0.5rem">Filter</h4>
-    <select id="map-filter-status" style="width:100%;margin-bottom:0.4rem;padding:0.3rem 0.4rem;font-size:0.8rem;border:1px solid #d5d8dc;border-radius:4px;">
-      <option value="">All Statuses</option>
-      <option value="available">Available</option>
-      <option value="deployed">Deployed</option>
-      <option value="unavailable">Unavailable</option>
-    </select>
-    <select id="map-filter-type" style="width:100%;padding:0.3rem 0.4rem;font-size:0.8rem;border:1px solid #d5d8dc;border-radius:4px;">
-      <option value="">All System Types</option>
-      <option value="drinking_water">Drinking Water</option>
-      <option value="wastewater">Wastewater</option>
-      <option value="both">Both</option>
-    </select>
+    <h4 style="margin-bottom:0.35rem">Category Filter</h4>
+    <div id="map-category-filters" class="category-filter-list">${categoriesHtml}</div>
   `;
   L.DomEvent.disableClickPropagation(div);
   return div;
 };
 filterCtrl.addTo(map);
 
-// ── Load & render markers ─────────────────────────
-let markerGroup = L.layerGroup().addTo(map);
+const markerGroup = L.markerClusterGroup({
+  showCoverageOnHover: false,
+  spiderfyOnMaxZoom: true,
+  maxClusterRadius: 42,
+  iconCreateFunction(cluster) {
+    return L.divIcon({
+      className: 'vrwa-cluster-icon',
+      html: `<div class="vrwa-cluster-bubble">${cluster.getChildCount()}</div>`,
+      iconSize: [38, 38]
+    });
+  }
+}).addTo(map);
 
 async function renderMarkers() {
-  const items       = await VRWAData.getAllItems();
-  const statusFilter = document.getElementById('map-filter-status').value;
-  const typeFilter   = document.getElementById('map-filter-type').value;
-
   markerGroup.clearLayers();
+  itemById.clear();
 
-  items.forEach(item => {
-    if (statusFilter && item.status !== statusFilter) return;
-    if (typeFilter   && item.systemType !== typeFilter)  return;
-    if (!item.lat || !item.lon) return;
-
-    const color  = STATUS_COLORS[item.status] || '#999';
-    const icon   = CATEGORY_ICONS[item.category] || '📦';
-    const sysLbl = SYSTEM_TYPES[item.systemType]  || item.systemType;
-    const stLbl  = STATUSES[item.status]          || item.status;
-
-    const circle = L.circleMarker([item.lat, item.lon], {
-      radius: 10,
-      fillColor: color,
-      color: '#fff',
-      weight: 2,
-      opacity: 1,
-      fillOpacity: 0.88
+  try {
+    const items = await VRWAData.getAllItems();
+    const filtered = items.filter(item => {
+      const hasCoords = Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lon));
+      return hasCoords && activeCategories.has(item.category || 'Other');
     });
 
-    const popupHtml = `
-      <div class="popup-title">${icon} ${item.name}</div>
-      <div class="popup-row"><span class="popup-label">Organization</span><span class="popup-val">${item.organization || '—'}</span></div>
-      <div class="popup-row"><span class="popup-label">Location</span><span class="popup-val">${item.town}, ${item.state}</span></div>
-      <div class="popup-row"><span class="popup-label">System</span><span class="popup-val">${sysLbl}</span></div>
-      <div class="popup-row"><span class="popup-label">Qty</span><span class="popup-val">${item.quantity}</span></div>
-      <div class="popup-row"><span class="popup-label">Status</span><span class="popup-val"><strong style="color:${color}">${stLbl}</strong></span></div>
-      ${item.description ? `<div style="margin-top:0.5rem;font-size:0.78rem;color:#555;line-height:1.4">${item.description}</div>` : ''}
-      ${item.contact ? `<div style="margin-top:0.4rem;font-size:0.78rem;color:#2e86c1">📞 ${item.contact}</div>` : ''}
-    `;
+    filtered.forEach(item => {
+      itemById.set(item.id, item);
+      const marker = L.marker([Number(item.lat), Number(item.lon)], { icon: buildMarkerIcon(item) });
+      marker.bindPopup(buildSummaryPopup(item), { maxWidth: 300 });
+      marker.on('mouseover', function() { this.openPopup(); });
+      markerGroup.addLayer(marker);
+    });
 
-    circle.bindPopup(popupHtml, { maxWidth: 280 });
-    circle.on('mouseover', function() { this.openPopup(); });
-    circle.on('mouseout',  function() { this.closePopup(); });
-    markerGroup.addLayer(circle);
-  });
+    if (filtered.length) {
+      map.fitBounds(markerGroup.getBounds(), { padding: [24, 24] });
+    } else {
+      map.setView(defaultView.center, defaultView.zoom);
+    }
+  } catch (err) {
+    console.error('Map data failed to load:', err);
+  }
 }
 
-renderMarkers();
+map.on('popupopen', function(e) {
+  const popupEl = e.popup.getElement();
+  if (!popupEl) return;
+
+  const link = popupEl.querySelector('.js-popup-more');
+  if (!link) return;
+
+  link.addEventListener('click', function(evt) {
+    evt.preventDefault();
+    const item = itemById.get(link.dataset.itemId);
+    if (!item) return;
+    e.popup.setContent(buildDetailPopup(item));
+    e.popup.update();
+  }, { once: true });
+});
 
 document.addEventListener('change', function(e) {
-  if (e.target.id === 'map-filter-status' || e.target.id === 'map-filter-type') {
-    renderMarkers();
+  if (!e.target.classList.contains('js-category-toggle')) return;
+
+  const category = e.target.value;
+  if (e.target.checked) {
+    activeCategories.add(category);
+  } else {
+    activeCategories.delete(category);
   }
+
+  renderMarkers();
 });
+
+renderMarkers();
 </script>
 <footer>
   <strong>Vermont Rural Water Association</strong> · Mutual Aid Map<br>
