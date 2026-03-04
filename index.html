@@ -74,6 +74,50 @@
       font-size: 0.8rem;
     }
     .popup-more:hover { text-decoration: underline; }
+
+  /* PROTOTYPE BANNER — remove this block and the HTML below to disable */
+  #prototype-banner {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #prototype-banner-box {
+    background: #fff;
+    border: 3px solid #e53e3e;
+    border-radius: 8px;
+    max-width: 480px;
+    width: 90%;
+    padding: 1.8rem 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+    text-align: center;
+  }
+  #prototype-banner-box h2 {
+    color: #e53e3e;
+    margin: 0 0 0.75rem;
+    font-size: 1.4rem;
+  }
+  #prototype-banner-box p {
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 1.25rem;
+  }
+  #prototype-banner-dismiss {
+    background: #e53e3e;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 0.55rem 1.4rem;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  #prototype-banner-dismiss:hover { background: #c53030; }
+  /* END PROTOTYPE BANNER */
   </style>
 </head>
 <body>
@@ -90,6 +134,16 @@
     <li><a href="manage.html">Manage</a></li>
   </ul>
 </nav>
+
+<!-- PROTOTYPE BANNER — remove this block and the CSS above to disable -->
+<div id="prototype-banner" role="dialog" aria-modal="true" aria-labelledby="prototype-banner-title">
+  <div id="prototype-banner-box">
+    <h2 id="prototype-banner-title">&#9888; Prototype — Do Not Use</h2>
+    <p>This map is a <strong>prototype under active development</strong> and should not be used for operational purposes at this time. Data may be incomplete or inaccurate.</p>
+    <button id="prototype-banner-dismiss" onclick="document.getElementById('prototype-banner').remove()">I Understand</button>
+  </div>
+</div>
+<!-- END PROTOTYPE BANNER -->
 
 <div class="page">
   <div id="map"></div>
