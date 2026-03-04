@@ -78,9 +78,9 @@
   </a>
   <ul class="nav-links">
     <li><a href="index.html" class="active">Map</a></li>
+    <li><a href="about.html">About</a></li>
     <li><a href="list.html">List</a></li>
     <li><a href="manage.html">Manage</a></li>
-    <li><a href="about.html">About</a></li>
   </ul>
 </nav>
 
@@ -111,6 +111,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 window.addEventListener('load', function() { map.invalidateSize(); });
 
 const defaultView = { center: [44.2, -72.6], zoom: 7 };
+const activeStatuses = new Set(Object.keys(DATA_STATUSES));
 const activeCategories = new Set(DATA_CATEGORIES);
 const itemById = new Map();
 
@@ -162,25 +163,18 @@ function buildMarkerIcon(item) {
   });
 }
 
-// ── Legend ────────────────────────────────────────
-const legend = L.control({ position: 'bottomright' });
-legend.onAdd = function() {
-  const div = L.DomUtil.create('div', 'map-legend');
-  div.innerHTML = `
-    <h4>Status</h4>
-    <div class="legend-item"><div class="legend-dot" style="background:#27ae60"></div> Available</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div> Deployed</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div> Unavailable</div>
-  `;
-  return div;
-};
-legend.addTo(map);
-
 // ── Filter controls ───────────────────────────────
 const filterCtrl = L.control({ position: 'topleft' });
 filterCtrl.onAdd = function() {
   const div = L.DomUtil.create('div', 'map-legend');
   div.style.padding = '0.6rem 0.8rem';
+  const statusesHtml = Object.entries(DATA_STATUSES).map(([value, label]) => `
+    <label class="category-toggle">
+      <input type="checkbox" class="js-status-toggle" value="${esc(value)}" checked>
+      <span><span class="legend-dot" style="display:inline-block;background:${esc(DATA_STATUS_COLORS[value] || '#999')};margin-right:0.35rem;vertical-align:middle"></span>${esc(label)}</span>
+    </label>
+  `).join('');
+
   const categoriesHtml = DATA_CATEGORIES.map(category => `
     <label class="category-toggle">
       <input type="checkbox" class="js-category-toggle" value="${esc(category)}" checked>
@@ -189,7 +183,9 @@ filterCtrl.onAdd = function() {
   `).join('');
 
   div.innerHTML = `
-    <h4 style="margin-bottom:0.35rem">Category Filter</h4>
+    <h4 style="margin-bottom:0.35rem">Status Filter</h4>
+    <div id="map-status-filters" class="category-filter-list">${statusesHtml}</div>
+    <h4 style="margin:0.55rem 0 0.35rem">Category Filter</h4>
     <div id="map-category-filters" class="category-filter-list">${categoriesHtml}</div>
   `;
   L.DomEvent.disableClickPropagation(div);
@@ -218,7 +214,9 @@ async function renderMarkers() {
     const items = await VRWAData.getAllItems();
     const filtered = items.filter(item => {
       const hasCoords = Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lon));
-      return hasCoords && activeCategories.has(item.category || 'Other');
+      return hasCoords
+        && activeStatuses.has(item.status || 'available')
+        && activeCategories.has(item.category || 'Other');
     });
 
     filtered.forEach(item => {
@@ -256,16 +254,26 @@ map.on('popupopen', function(e) {
 });
 
 document.addEventListener('change', function(e) {
-  if (!e.target.classList.contains('js-category-toggle')) return;
-
-  const category = e.target.value;
-  if (e.target.checked) {
-    activeCategories.add(category);
-  } else {
-    activeCategories.delete(category);
+  if (e.target.classList.contains('js-status-toggle')) {
+    const status = e.target.value;
+    if (e.target.checked) {
+      activeStatuses.add(status);
+    } else {
+      activeStatuses.delete(status);
+    }
+    renderMarkers();
+    return;
   }
 
-  renderMarkers();
+  if (e.target.classList.contains('js-category-toggle')) {
+    const category = e.target.value;
+    if (e.target.checked) {
+      activeCategories.add(category);
+    } else {
+      activeCategories.delete(category);
+    }
+    renderMarkers();
+  }
 });
 
 renderMarkers();

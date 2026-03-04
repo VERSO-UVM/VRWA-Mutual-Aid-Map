@@ -1,50 +1,118 @@
 # Vermont Rural Water Association Mutual Aid Map
 
-**Summer 2025 – Present**
+The Vermont Rural Water Association (VRWA) Mutual Aid Map is a lightweight static website for viewing and managing mutual aid resources (equipment, personnel, and related assets).
 
-The Vermont Rural Water Association (VRWA) Mutual Aid Map is a simple mapping tool designed to support rural water systems during emergencies. The map helps identify and locate critical mutual aid resources such as:
+## What this project is
 
-- Portable water pumps  
-- Mobile treatment systems  
-- Backup generators  
-- Other deployable assets  
+- Static HTML/CSS/JavaScript site (no build step required)
+- Main pages:
+  - `index.html` (map view)
+  - `list.html` (table/list view)
+  - `manage.html` (add/edit/update local data)
+- Data source:
+  - `locations.geojson` (base map/resource data)
+  - `js/data.js` (data layer and local storage merge logic)
 
-By making these resources visible and easily accessible, the map enables quick response and collaboration between rural water systems across Vermont.
+## Run locally (recommended for editing)
 
----
+Use a local HTTP server so browser fetch requests work correctly.
 
-## 🚰 Project Purpose
+### Option A: Python (recommended)
 
-Water systems in rural areas often face challenges during emergencies like floods, equipment failures, or power outages. This project provides a shared, community-based map of available equipment and aid, allowing systems to:
+From the project folder:
 
-- Locate the nearest available resources  
-- Request or offer mutual aid quickly  
-- Improve preparedness and resilience  
-
----
-
-## 🗺️ Features
-
-- Interactive map of mutual aid assets  
-- Categorization of equipment types (pumps, generators, treatment units, etc.)  
-- Easy-to-update database of available resources  
-- Built to be simple, lightweight, and accessible  
-
----
-
-## 🔧 Getting Started
-
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v16+)  
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)  
-
-### Installation
 ```bash
-# Clone this repository
-git clone https://github.com/VERSO-UVM/VRWA-Mutual-Aid-Map.git
+python -m http.server 8000
+```
 
-# Navigate into the project directory
-cd VRWA-Mutual-Aid-Map
+Then open:
 
-# Install dependencies
-npm install
+- `http://127.0.0.1:8000/`
+- `http://127.0.0.1:8000/index.html`
+
+Stop server with `Ctrl+C`.
+
+### Why not open by double-click?
+
+Opening `index.html` directly as `file://...` can block `fetch('locations.geojson')` in many browsers. Running a local server avoids that.
+
+## Local editing workflow
+
+1. Start local server (`python -m http.server 8000`)
+2. Edit files in this repo
+3. Refresh browser (`Cmd+R`)
+4. If changes seem stale, hard refresh (`Cmd+Shift+R`)
+
+### Files you will edit most often
+
+- `locations.geojson`
+  - Add/edit/remove base resources and coordinates
+- `js/data.js`
+  - Data mapping, categories, statuses, data loading/merge behavior
+- `index.html`, `list.html`, `manage.html`
+  - UI and page behavior
+- `css/style.css`
+  - Shared styling
+
+## How to Use This Map
+
+### Viewing resources
+
+- Open `index.html` to view resources on the map
+- Open `list.html` to view/search/sort resources in table form
+- Open `manage.html` to add items or change statuses
+
+### How data is saved
+
+- Base/shared data is stored in `locations.geojson`
+- Changes made in `manage.html` are saved in your browser `localStorage` by default
+- Local storage keys used by the app:
+  - `vrwa_items` (locally added items)
+  - `vrwa_overrides` (status overrides for base items)
+
+### What this means for updates
+
+- Browser-saved changes are local to that browser/profile/device
+- Browser-saved changes are not automatically written back to `locations.geojson`
+- To make updates permanent and shareable, edit `locations.geojson` in the repository
+- After editing `locations.geojson`, reload the site and commit/push those file changes if using Git
+
+## How data updates work
+
+The app loads base data from `locations.geojson` and also supports browser-local edits from `manage.html` using `localStorage`.
+
+- Base data fetch: `js/data.js` (`fetch('locations.geojson')`)
+- Local keys:
+  - `vrwa_items` (user-added local items)
+  - `vrwa_overrides` (status overrides)
+
+If you want to test only base GeoJSON data, clear site storage in browser dev tools.
+
+## Updating the map data (`locations.geojson`)
+
+Each feature should be a GeoJSON `Feature` with:
+
+- Geometry: `Point` with `[lon, lat]`
+- Properties (expected):
+  - `id`, `name`, `category`, `systemType`, `organization`, `town`, `state`, `status`, `quantity`, `description`, `contact`
+
+After editing `locations.geojson`:
+
+1. Save file
+2. Refresh `index.html`
+3. Verify marker appears in the correct location
+
+## Troubleshooting
+
+- Blank map:
+  - Confirm server is running and you are using `http://127.0.0.1:8000/` (not `file://`)
+  - Check browser console for JavaScript errors
+  - Confirm external tile/CDN access
+- No data markers:
+  - Check `locations.geojson` is valid JSON/GeoJSON
+  - Confirm coordinates are numeric and in `[lon, lat]` order
+  - Hard refresh browser cache
+
+## License
+
+See `LICENSE`.

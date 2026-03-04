@@ -16,9 +16,9 @@
   </a>
   <ul class="nav-links">
     <li><a href="index.html">Map</a></li>
+    <li><a href="about.html">About</a></li>
     <li><a href="list.html">List</a></li>
     <li><a href="manage.html" class="active">Manage</a></li>
-    <li><a href="about.html">About</a></li>
   </ul>
 </nav>
 
@@ -151,10 +151,10 @@
       <table>
         <thead>
           <tr>
-            <th>Item</th>
-            <th>Organization</th>
-            <th>Location</th>
-            <th>Status</th>
+            <th data-manage-col="item">Item <span class="si">↕</span></th>
+            <th data-manage-col="organization">Organization <span class="si">↕</span></th>
+            <th data-manage-col="location">Location <span class="si">↕</span></th>
+            <th data-manage-col="status">Status <span class="si">↕</span></th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -223,6 +223,8 @@ function syncPickerFromInputs() {
 let editingId   = null;
 let editingBase = false;
 let allItems    = [];
+let manageSortCol = 'item';
+let manageSortDir = 1; // 1 = asc, -1 = desc
 
 function resetForm() {
   editingId   = null;
@@ -277,7 +279,6 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
   };
 
   if (editingId) {
-    // For base items in edit mode, we only allow status updates via the manage table
     VRWAData.updateItem(editingId, data);
     showAlert('Item updated successfully.');
   } else {
@@ -311,24 +312,50 @@ function renderManageTable() {
     return true;
   });
 
-  if (filtered.length === 0) {
+  const sorted = [...filtered].sort((a, b) => {
+    let va = '';
+    let vb = '';
+
+    if (manageSortCol === 'item') {
+      va = String(a.name || '').toLowerCase();
+      vb = String(b.name || '').toLowerCase();
+    } else if (manageSortCol === 'organization') {
+      va = String(a.organization || '').toLowerCase();
+      vb = String(b.organization || '').toLowerCase();
+    } else if (manageSortCol === 'location') {
+      va = `${String(a.town || '').toLowerCase()}, ${String(a.state || '').toLowerCase()}`;
+      vb = `${String(b.town || '').toLowerCase()}, ${String(b.state || '').toLowerCase()}`;
+    } else if (manageSortCol === 'status') {
+      va = String(DATA_STATUSES[a.status] || a.status || '').toLowerCase();
+      vb = String(DATA_STATUSES[b.status] || b.status || '').toLowerCase();
+    }
+
+    if (va < vb) return -manageSortDir;
+    if (va > vb) return manageSortDir;
+    return 0;
+  });
+
+  document.querySelectorAll('th[data-manage-col]').forEach(th => {
+    const col = th.dataset.manageCol;
+    const si  = th.querySelector('.si');
+    if (si) {
+      si.textContent = col === manageSortCol ? (manageSortDir === 1 ? '↑' : '↓') : '↕';
+    }
+  });
+
+  if (sorted.length === 0) {
     tbody.innerHTML = '<tr class="no-results"><td colspan="5">No items found.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = filtered.map(item => {
+  tbody.innerHTML = sorted.map(item => {
     const icon   = DATA_CATEGORY_ICONS[item.category] || '📦';
     const stLbl  = DATA_STATUSES[item.status] || item.status;
-    const color  = DATA_STATUS_COLORS[item.status] || '#999';
     const isBase = item.source === 'base';
 
-    const editBtn = isBase
-      ? '' // base items: only status changes allowed via quick-select
-      : `<button class="btn btn-sm btn-edit" onclick="startEdit('${item.id}')">✏ Edit</button>`;
+      const editBtn = `<button class="btn btn-sm btn-edit" onclick="startEdit('${item.id}')">✏ Edit</button>`;
 
-    const delBtn = isBase
-      ? ''
-      : `<button class="btn btn-sm btn-delete" onclick="confirmDelete('${item.id}','${item.name.replace(/'/g,"\\'")}')">🗑 Delete</button>`;
+      const delBtn = `<button class="btn btn-sm btn-delete" onclick="confirmDelete('${item.id}','${item.name.replace(/'/g,"\\'")}')">🗑 Delete</button>`;
 
     const statusSel = `
       <select class="filter-select" style="font-size:0.78rem;padding:0.2rem 0.4rem"
@@ -347,7 +374,9 @@ function renderManageTable() {
       <td>${item.organization || '—'}</td>
       <td>${item.town || '—'}, ${item.state || '—'}</td>
       <td>${statusSel}</td>
-      <td style="white-space:nowrap;display:flex;gap:0.4rem;padding-top:0.65rem">${editBtn}${delBtn}</td>
+      <td style="white-space:nowrap;vertical-align:middle">
+        <div style="display:flex;gap:0.4rem;align-items:center">${editBtn}${delBtn}</div>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -395,12 +424,26 @@ function startEdit(id) {
 function confirmDelete(id, name) {
   if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
   VRWAData.deleteItem(id);
+    showAlert('Item deleted successfully.');
   loadItems();
 }
 
 // ── Search/filter in manage table ─────────────────
 document.getElementById('manage-search').addEventListener('input', renderManageTable);
 document.getElementById('manage-filter-status').addEventListener('change', renderManageTable);
+
+document.querySelectorAll('th[data-manage-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.manageCol;
+    if (manageSortCol === col) {
+      manageSortDir *= -1;
+    } else {
+      manageSortCol = col;
+      manageSortDir = 1;
+    }
+    renderManageTable();
+  });
+});
 
 // ── Export ────────────────────────────────────────
 document.getElementById('btn-export').addEventListener('click', async () => {

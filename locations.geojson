@@ -1,17 +1,341 @@
-{"type": "FeatureCollection", "features": [
-  {"type": "Feature", "properties": {"id": "vrwa-001", "name": "Mobile Water Treatment Trailer", "category": "Mobile Treatment", "systemType": "drinking_water", "organization": "Vermont Rural Water Association", "town": "Burlington", "state": "VT", "status": "available", "quantity": 1, "description": "Trailer-mounted mobile water treatment unit capable of treating surface water or groundwater. Suitable for communities facing source contamination or infrastructure failure.", "contact": "info@vtruralwater.org | 802-660-4988"}, "geometry": {"type": "Point", "coordinates": [-73.2121, 44.4759]}},
-  {"type": "Feature", "properties": {"id": "vrwa-002", "name": "Emergency Response Trailer – Water & Wastewater", "category": "Emergency Trailer", "systemType": "both", "organization": "Vermont Rural Water Association", "town": "Montpelier", "state": "VT", "status": "available", "quantity": 1, "description": "Stocked emergency response trailer with tools, safety gear, lights, saws, and portable equipment for water/wastewater emergencies. Available to VT WARN members.", "contact": "info@vtruralwater.org | 802-660-4988"}, "geometry": {"type": "Point", "coordinates": [-72.5754, 44.2601]}},
-  {"type": "Feature", "properties": {"id": "city-rutland-001", "name": "Trailer-Mounted 500 GPM Wastewater Pump", "category": "Pump", "systemType": "wastewater", "organization": "City of Rutland Public Works", "town": "Rutland", "state": "VT", "status": "available", "quantity": 1, "description": "High-capacity 500 GPM trailer-mounted pump for wastewater bypass pumping during lift station failures, pipe breaks, or flooding events.", "contact": "Rutland DPW | 802-773-1800"}, "geometry": {"type": "Point", "coordinates": [-72.9726, 43.6106]}},
-  {"type": "Feature", "properties": {"id": "vrwa-003", "name": "Ground Penetrating Radar Unit", "category": "Detection Equipment", "systemType": "both", "organization": "Vermont Rural Water Association", "town": "Barre", "state": "VT", "status": "available", "quantity": 1, "description": "Ground penetrating radar for locating buried water and sewer mains, valves, and other underground infrastructure without excavation.", "contact": "info@vtruralwater.org | 802-660-4988"}, "geometry": {"type": "Point", "coordinates": [-72.5023, 44.1973]}},
-  {"type": "Feature", "properties": {"id": "vrwa-004", "name": "Portable Correlator – Leak Detection", "category": "Detection Equipment", "systemType": "drinking_water", "organization": "Vermont Rural Water Association", "town": "Newport", "state": "VT", "status": "available", "quantity": 1, "description": "Acoustic leak correlator for pinpointing leaks in pressurized water mains. Reduces excavation costs and emergency response time.", "contact": "info@vtruralwater.org | 802-660-4988"}, "geometry": {"type": "Point", "coordinates": [-72.2048, 44.9367]}},
-  {"type": "Feature", "properties": {"id": "vrwa-005", "name": "Valve & Hydrant Exerciser", "category": "Detection Equipment", "systemType": "drinking_water", "organization": "Vermont Rural Water Association", "town": "St. Johnsbury", "state": "VT", "status": "available", "quantity": 1, "description": "Motorized valve and hydrant exerciser for maintaining gate valves and fire hydrants. Helps ensure operability during emergencies.", "contact": "info@vtruralwater.org | 802-660-4988"}, "geometry": {"type": "Point", "coordinates": [-72.0185, 44.4195]}},
-  {"type": "Feature", "properties": {"id": "vrwa-006", "name": "Tilt-and-Pan Sewer Line Camera", "category": "Sewer Equipment", "systemType": "wastewater", "organization": "Vermont Rural Water Association", "town": "White River Junction", "state": "VT", "status": "available", "quantity": 1, "description": "CCTV sewer inspection camera for assessing pipe condition, identifying blockages, and locating damage after floods or ground movement.", "contact": "info@vtruralwater.org | 802-660-4988"}, "geometry": {"type": "Point", "coordinates": [-72.3193, 43.6484]}},
-  {"type": "Feature", "properties": {"id": "town-middlebury-001", "name": "Portable Water Storage Tank – 10,000 Gal", "category": "Water Supply", "systemType": "drinking_water", "organization": "Town of Middlebury Water Dept.", "town": "Middlebury", "state": "VT", "status": "available", "quantity": 2, "description": "Collapsible 10,000-gallon potable water storage bladder tank for emergency water distribution. NSF-certified for drinking water use.", "contact": "Middlebury Water Dept. | 802-388-8100"}, "geometry": {"type": "Point", "coordinates": [-73.1673, 44.0145]}},
-  {"type": "Feature", "properties": {"id": "town-brattleboro-001", "name": "Pumper / Vactor Truck", "category": "Vacuum/Vactor Truck", "systemType": "wastewater", "organization": "Town of Brattleboro DPW", "town": "Brattleboro", "state": "VT", "status": "deployed", "quantity": 1, "description": "Combination vacuum/jetter truck for sewer cleaning, lift station bypass, and wastewater emergency response. Currently deployed to assist neighboring utility.", "contact": "Brattleboro DPW | 802-254-4255"}, "geometry": {"type": "Point", "coordinates": [-72.5579, 42.8509]}},
-  {"type": "Feature", "properties": {"id": "town-stowe-001", "name": "Portable Generator – 75 kW", "category": "Generator", "systemType": "both", "organization": "Town of Stowe Public Works", "town": "Stowe", "state": "VT", "status": "available", "quantity": 1, "description": "Trailer-mounted 75 kW diesel generator for backup power at water treatment plants, pump stations, or wastewater facilities during outages.", "contact": "Stowe Public Works | 802-253-7371"}, "geometry": {"type": "Point", "coordinates": [-72.6871, 44.4654]}},
-  {"type": "Feature", "properties": {"id": "town-bennington-001", "name": "Portable Generator – 100 kW", "category": "Generator", "systemType": "both", "organization": "Town of Bennington DPW", "town": "Bennington", "state": "VT", "status": "available", "quantity": 1, "description": "Skid-mounted 100 kW generator available for emergency deployment to water or wastewater facilities. Includes transfer switch and 500-gallon fuel tank.", "contact": "Bennington DPW | 802-442-1037"}, "geometry": {"type": "Point", "coordinates": [-73.1973, 42.8784]}},
-  {"type": "Feature", "properties": {"id": "city-plattsburgh-001", "name": "Mobile Pump Station Skid", "category": "Pump Station", "systemType": "wastewater", "organization": "City of Plattsburgh Water & Sewer", "town": "Plattsburgh", "state": "NY", "status": "available", "quantity": 1, "description": "Self-contained portable pump station skid for bypass pumping of sewer lift stations. Includes controls, float switches, and quick-connect fittings.", "contact": "Plattsburgh Water & Sewer | 518-563-7752"}, "geometry": {"type": "Point", "coordinates": [-73.4529, 44.6995]}},
-  {"type": "Feature", "properties": {"id": "city-concord-001", "name": "Mobile Water Treatment Unit", "category": "Mobile Treatment", "systemType": "drinking_water", "organization": "City of Concord Water Division", "town": "Concord", "state": "NH", "status": "available", "quantity": 1, "description": "Skid-mounted filtration and disinfection unit for temporary drinking water treatment. Suitable for surface water sources up to 200 GPM.", "contact": "Concord Water Division | 603-225-8690"}, "geometry": {"type": "Point", "coordinates": [-71.5376, 43.2081]}},
-  {"type": "Feature", "properties": {"id": "town-keene-001", "name": "Bottled Water Supply – Pallet Stock", "category": "Water Supply", "systemType": "drinking_water", "organization": "Town of Keene Water Department", "town": "Keene", "state": "NH", "status": "available", "quantity": 4, "description": "Emergency pallets of bottled water (500 cases/pallet) for distribution during boil water advisories or distribution system failures. Available on 24-hour notice.", "contact": "Keene Water Dept. | 603-357-9818"}, "geometry": {"type": "Point", "coordinates": [-72.2793, 42.9337]}},
-  {"type": "Feature", "properties": {"id": "vrwa-test-001", "name": "Test", "category": "Other", "systemType": "both", "organization": "Vermont Rural Water Association", "town": "Essex Junction", "state": "VT", "status": "available", "quantity": 1, "description": "Test item at VRWA headquarters. 20 Susie Wilson Road, Suite B, Essex Junction, VT 05452.", "contact": "info@vtruralwater.org | 802-660-4988"}, "geometry": {"type": "Point", "coordinates": [-73.1046, 44.4896]}}
-]}
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vrwa-001",
+        "name": "Mobile Water Treatment Trailer",
+        "category": "Mobile Treatment",
+        "systemType": "drinking_water",
+        "organization": "Vermont Rural Water Association",
+        "town": "Burlington",
+        "state": "VT",
+        "status": "available",
+        "quantity": 1,
+        "description": "Trailer-mounted mobile water treatment unit capable of treating surface water or groundwater. Suitable for communities facing source contamination or infrastructure failure.",
+        "contact": "info@vtruralwater.org | 802-660-4988",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.2121,
+          44.4759
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vrwa-002",
+        "name": "Emergency Response Trailer – Water & Wastewater",
+        "category": "Emergency Trailer",
+        "systemType": "both",
+        "organization": "Vermont Rural Water Association",
+        "town": "Montpelier",
+        "state": "VT",
+        "status": "available",
+        "quantity": 1,
+        "description": "Stocked emergency response trailer with tools, safety gear, lights, saws, and portable equipment for water/wastewater emergencies. Available to VT WARN members.",
+        "contact": "info@vtruralwater.org | 802-660-4988",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.5754,
+          44.2601
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "city-rutland-001",
+        "name": "Trailer-Mounted 500 GPM Wastewater Pump",
+        "category": "Pump",
+        "systemType": "wastewater",
+        "organization": "City of Rutland Public Works",
+        "town": "Rutland",
+        "state": "VT",
+        "status": "available",
+        "quantity": 1,
+        "description": "High-capacity 500 GPM trailer-mounted pump for wastewater bypass pumping during lift station failures, pipe breaks, or flooding events.",
+        "contact": "Rutland DPW | 802-773-1800",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.9726,
+          43.6106
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vrwa-003",
+        "name": "Ground Penetrating Radar Unit",
+        "category": "Detection Equipment",
+        "systemType": "both",
+        "organization": "Vermont Rural Water Association",
+        "town": "Barre",
+        "state": "VT",
+        "status": "available",
+        "quantity": 1,
+        "description": "Ground penetrating radar for locating buried water and sewer mains, valves, and other underground infrastructure without excavation.",
+        "contact": "info@vtruralwater.org | 802-660-4988",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.5023,
+          44.1973
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vrwa-004",
+        "name": "Portable Correlator – Leak Detection",
+        "category": "Detection Equipment",
+        "systemType": "drinking_water",
+        "organization": "Vermont Rural Water Association",
+        "town": "Newport",
+        "state": "VT",
+        "status": "available",
+        "quantity": 1,
+        "description": "Acoustic leak correlator for pinpointing leaks in pressurized water mains. Reduces excavation costs and emergency response time.",
+        "contact": "info@vtruralwater.org | 802-660-4988",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.2048,
+          44.9367
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vrwa-005",
+        "name": "Valve & Hydrant Exerciser",
+        "category": "Detection Equipment",
+        "systemType": "drinking_water",
+        "organization": "Vermont Rural Water Association",
+        "town": "St. Johnsbury",
+        "state": "VT",
+        "status": "available",
+        "quantity": 1,
+        "description": "Motorized valve and hydrant exerciser for maintaining gate valves and fire hydrants. Helps ensure operability during emergencies.",
+        "contact": "info@vtruralwater.org | 802-660-4988",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.0185,
+          44.4195
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vrwa-006",
+        "name": "Tilt-and-Pan Sewer Line Camera",
+        "category": "Sewer Equipment",
+        "systemType": "wastewater",
+        "organization": "Vermont Rural Water Association",
+        "town": "White River Junction",
+        "state": "VT",
+        "status": "available",
+        "quantity": 1,
+        "description": "CCTV sewer inspection camera for assessing pipe condition, identifying blockages, and locating damage after floods or ground movement.",
+        "contact": "info@vtruralwater.org | 802-660-4988",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.3193,
+          43.6484
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "town-middlebury-001",
+        "name": "Portable Water Storage Tank – 10,000 Gal",
+        "category": "Water Supply",
+        "systemType": "drinking_water",
+        "organization": "Town of Middlebury Water Dept.",
+        "town": "Middlebury",
+        "state": "VT",
+        "status": "available",
+        "quantity": 2,
+        "description": "Collapsible 10,000-gallon potable water storage bladder tank for emergency water distribution. NSF-certified for drinking water use.",
+        "contact": "Middlebury Water Dept. | 802-388-8100",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.1673,
+          44.0145
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "town-brattleboro-001",
+        "name": "Pumper / Vactor Truck",
+        "category": "Vacuum/Vactor Truck",
+        "systemType": "wastewater",
+        "organization": "Town of Brattleboro DPW",
+        "town": "Brattleboro",
+        "state": "VT",
+        "status": "deployed",
+        "quantity": 1,
+        "description": "Combination vacuum/jetter truck for sewer cleaning, lift station bypass, and wastewater emergency response. Currently deployed to assist neighboring utility.",
+        "contact": "Brattleboro DPW | 802-254-4255",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.5579,
+          42.8509
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "town-stowe-001",
+        "name": "Portable Generator – 75 kW",
+        "category": "Generator",
+        "systemType": "both",
+        "organization": "Town of Stowe Public Works",
+        "town": "Stowe",
+        "state": "VT",
+        "status": "available",
+        "quantity": 1,
+        "description": "Trailer-mounted 75 kW diesel generator for backup power at water treatment plants, pump stations, or wastewater facilities during outages.",
+        "contact": "Stowe Public Works | 802-253-7371",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.6871,
+          44.4654
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "town-bennington-001",
+        "name": "Portable Generator – 100 kW",
+        "category": "Generator",
+        "systemType": "both",
+        "organization": "Town of Bennington DPW",
+        "town": "Bennington",
+        "state": "VT",
+        "status": "available",
+        "quantity": 1,
+        "description": "Skid-mounted 100 kW generator available for emergency deployment to water or wastewater facilities. Includes transfer switch and 500-gallon fuel tank.",
+        "contact": "Bennington DPW | 802-442-1037",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.1973,
+          42.8784
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "city-plattsburgh-001",
+        "name": "Mobile Pump Station Skid",
+        "category": "Pump Station",
+        "systemType": "wastewater",
+        "organization": "City of Plattsburgh Water & Sewer",
+        "town": "Plattsburgh",
+        "state": "NY",
+        "status": "available",
+        "quantity": 1,
+        "description": "Self-contained portable pump station skid for bypass pumping of sewer lift stations. Includes controls, float switches, and quick-connect fittings.",
+        "contact": "Plattsburgh Water & Sewer | 518-563-7752",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.4529,
+          44.6995
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "city-concord-001",
+        "name": "Mobile Water Treatment Unit",
+        "category": "Mobile Treatment",
+        "systemType": "drinking_water",
+        "organization": "City of Concord Water Division",
+        "town": "Concord",
+        "state": "NH",
+        "status": "available",
+        "quantity": 1,
+        "description": "Skid-mounted filtration and disinfection unit for temporary drinking water treatment. Suitable for surface water sources up to 200 GPM.",
+        "contact": "Concord Water Division | 603-225-8690",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.5376,
+          43.2081
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "town-keene-001",
+        "name": "Bottled Water Supply – Pallet Stock",
+        "category": "Water Supply",
+        "systemType": "drinking_water",
+        "organization": "Town of Keene Water Department",
+        "town": "Keene",
+        "state": "NH",
+        "status": "available",
+        "quantity": 4,
+        "description": "Emergency pallets of bottled water (500 cases/pallet) for distribution during boil water advisories or distribution system failures. Available on 24-hour notice.",
+        "contact": "Keene Water Dept. | 603-357-9818",
+        "lastUpdated": "2026-03-04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.2793,
+          42.9337
+        ]
+      }
+    }
+  ]
+}

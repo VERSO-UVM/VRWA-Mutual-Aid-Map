@@ -5,6 +5,8 @@
 
 const DATA_KEY  = 'vrwa_items';
 const OVER_KEY  = 'vrwa_overrides'; // status overrides for base items
+const EDIT_KEY  = 'vrwa_base_edits';
+const DEL_KEY   = 'vrwa_deleted_ids';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -62,6 +64,10 @@ function genId() {
   return 'user-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
 }
 
+function getTodayDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function featureToItem(f) {
   const p = f.properties || {};
   return {
@@ -76,6 +82,7 @@ function featureToItem(f) {
     quantity:     p.quantity    || 1,
     description:  p.description || '',
     contact:      p.contact     || '',
+    lastUpdated:  p.lastUpdated || '',
     lat:          f.geometry.coordinates[1],
     lon:          f.geometry.coordinates[0],
     source:       'base'
@@ -96,7 +103,8 @@ function itemToFeature(item) {
       status:       item.status,
       quantity:     item.quantity,
       description:  item.description,
-      contact:      item.contact
+      contact:      item.contact,
+      lastUpdated:  item.lastUpdated || ''
     },
     geometry: { type: 'Point', coordinates: [parseFloat(item.lon), parseFloat(item.lat)] }
   };
@@ -120,6 +128,27 @@ function saveOverrides(ov) {
   localStorage.setItem(OVER_KEY, JSON.stringify(ov));
 }
 
+function loadBaseEdits() {
+  try { return JSON.parse(localStorage.getItem(EDIT_KEY) || '{}'); } catch { return {}; }
+}
+
+function saveBaseEdits(edits) {
+  localStorage.setItem(EDIT_KEY, JSON.stringify(edits));
+}
+
+function loadDeletedIds() {
+  try {
+    const value = JSON.parse(localStorage.getItem(DEL_KEY) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveDeletedIds(ids) {
+  localStorage.setItem(DEL_KEY, JSON.stringify(ids));
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 let _base = null; // cached base items
@@ -135,19 +164,25 @@ async function fetchBase() {
 async function getAllItems() {
   const base      = await fetchBase();
   const overrides = loadOverrides();
+  const edits     = loadBaseEdits();
+  const deleted   = new Set(loadDeletedIds());
   const user      = loadUserItems();
 
   // Apply status overrides to base items
-  const baseMerged = base.map(item => ({
-    ...item,
-    status: overrides[item.id] || item.status
-  }));
+  const baseMerged = base
+    .filter(item => !deleted.has(item.id))
+    .map(item => ({
+      ...item,
+      ...(edits[item.id] || {}),
+      status: overrides[item.id] || (edits[item.id]?.status || item.status)
+    }));
 
-  return [...baseMerged, ...user];
+  const userMerged = user.filter(item => !deleted.has(item.id));
+  return [...baseMerged, ...userMerged];
 }
 
 function addItem(data) {
-  const item = { ...data, id: genId(), source: 'user' };
+  const item = { ...data, id: genId(), source: 'user', lastUpdated: getTodayDate() };
   const items = loadUserItems();
   items.push(item);
   saveUserItems(items);
@@ -155,22 +190,34 @@ function addItem(data) {
 }
 
 function updateItem(id, data) {
+  const updatedData = { ...data, lastUpdated: getTodayDate() };
+
   // Check user items first
   const items = loadUserItems();
   const idx   = items.findIndex(i => i.id === id);
   if (idx !== -1) {
-    items[idx] = { ...items[idx], ...data };
+    items[idx] = { ...items[idx], ...updatedData };
     saveUserItems(items);
     return true;
   }
-  // For base items, only allow status override
-  if (data.status) {
+
+  // For base items, save editable field overrides locally
+  const edits = loadBaseEdits();
+  edits[id] = { ...(edits[id] || {}), ...updatedData };
+  saveBaseEdits(edits);
+
+  if (updatedData.status) {
     const ov = loadOverrides();
-    ov[id] = data.status;
+    ov[id] = updatedData.status;
     saveOverrides(ov);
-    return true;
   }
-  return false;
+
+  const deleted = loadDeletedIds();
+  if (deleted.includes(id)) {
+    saveDeletedIds(deleted.filter(itemId => itemId !== id));
+  }
+
+  return true;
 }
 
 function deleteItem(id) {
@@ -180,7 +227,26 @@ function deleteItem(id) {
     saveUserItems(filtered);
     return true;
   }
-  return false; // base items cannot be deleted
+
+  const deleted = loadDeletedIds();
+  if (!deleted.includes(id)) {
+    deleted.push(id);
+    saveDeletedIds(deleted);
+  }
+
+  const ov = loadOverrides();
+  if (ov[id]) {
+    delete ov[id];
+    saveOverrides(ov);
+  }
+
+  const edits = loadBaseEdits();
+  if (edits[id]) {
+    delete edits[id];
+    saveBaseEdits(edits);
+  }
+
+  return true;
 }
 
 async function exportGeoJSON() {
